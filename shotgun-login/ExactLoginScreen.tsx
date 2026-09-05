@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: colors.canvas },
   scroll: { flexGrow: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: spacing[5] },
   phone: { width: '100%', maxWidth: 492, overflow: 'hidden', backgroundColor: '#4F7EA8' },
-  hero: { height: 470, overflow: 'hidden' },
+  hero: { height: 540, overflow: 'hidden' },
   referenceArt: { width: '100%', aspectRatio: 492 / 909, position: 'absolute', top: 0 },
   form: { gap: 10, backgroundColor: '#4F7EA8', paddingHorizontal: 36, paddingBottom: 42, paddingTop: 22 },
   formTitle: { color: colors.white, fontSize: 30, fontWeight: '800', letterSpacing: -0.8 },
