@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Shotgun login preview</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { align-items: center; background: #eaf3f9; display: flex; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; justify-content: center; margin: 0; min-height: 100vh; padding: 20px; }
+      .phone { background: #4f7ea8; box-shadow: 0 24px 60px #102a4344; max-width: 492px; overflow: hidden; width: 100%; }
+      .hero { height: min(470px, 96vw); overflow: hidden; position: relative; }
+      .hero img { display: block; left: 0; position: absolute; top: 0; width: 100%; }
+      form { background: #4f7ea8; display: grid; gap: 10px; padding: 22px 36px 42px; }
+      h1 { color: #fff; font-size: 30px; letter-spacing: -.8px; margin: 0; }
+      .subtitle { color: #dceaf4; font-size: 16px; line-height: 23px; margin: 0 0 14px; }
+      label { color: #fff; font-size: 12px; font-weight: 800; letter-spacing: 1.4px; }
+      input { background: #fff; border: 0; border-radius: 12px; color: #102a43; font: inherit; font-size: 16px; min-height: 56px; outline: 0; padding: 0 16px; width: 100%; }
+      input:focus { box-shadow: 0 0 0 3px #dceaf4; }
+      .password-row { align-items: center; display: flex; justify-content: space-between; margin-top: 6px; }
+      .forgot { background: none; border: 0; color: #fff; cursor: pointer; font-weight: 700; padding: 0; text-decoration: underline; }
+      .continue { background: #ff8a6a; border: 0; border-radius: 12px; color: #102a43; cursor: pointer; font-size: 19px; font-weight: 800; margin-top: 12px; min-height: 58px; }
+      .continue:disabled { cursor: not-allowed; opacity: .58; }
+      .message { color: #fff; font-size: 14px; line-height: 20px; margin: 3px 0 0; min-height: 20px; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <main class="phone">
+      <section class="hero"><img alt="Shotgun student rideshare illustration" src="login-reference.png" /></section>
+      <form id="login-form">
+        <h1>Sign in to ride.</h1>
+        <p class="subtitle">Use your university email to continue.</p>
+        <label for="email">UNIVERSITY EMAIL</label>
+        <input autocomplete="email" id="email" inputmode="email" placeholder="you@university.edu" type="email" />
+        <div class="password-row"><label for="password">PASSWORD</label><button class="forgot" id="forgot" type="button">Forgot password?</button></div>
+        <input autocomplete="current-password" id="password" placeholder="Create or enter password" type="password" />
+        <button class="continue" disabled id="continue" type="submit">Continue</button>
+        <p aria-live="polite" class="message" id="message"></p>
+      </form>
+    </main>
+    <script>
+      const email = document.querySelector('#email');
+      const password = document.querySelector('#password');
+      const continueButton = document.querySelector('#continue');
+      const message = document.querySelector('#message');
+      const updateButton = () => { continueButton.disabled = !(email.value.trim() && password.value); };
+      email.addEventListener('input', updateButton);
+      password.addEventListener('input', updateButton);
+      document.querySelector('#forgot').addEventListener('click', () => { message.textContent = email.value.trim() ? `Reset link requested for ${email.value.trim()}.` : 'Enter your university email to reset your password.'; });
+      document.querySelector('#login-form').addEventListener('submit', (event) => { event.preventDefault(); message.textContent = 'Ready to sign in.'; });
+    </script>
+  </body>
+</html>
