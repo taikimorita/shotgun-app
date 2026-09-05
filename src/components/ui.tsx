@@ -20,7 +20,11 @@ export function Button({ children, onPress, disabled = false, loading = false, v
       onPress={onPress}
       style={({ pressed }) => [styles.button, styles[`button_${variant}`], (pressed || disabled || loading) && styles.buttonMuted]}
     >
-      {loading ? <ActivityIndicator color={variant === 'primary' ? '#ffffff' : '#17202a'} /> : <Text style={styles.buttonText}>{children}</Text>}
+      {loading ? (
+        <ActivityIndicator color={variant === 'secondary' ? '#17202a' : '#ffffff'} />
+      ) : (
+        <Text style={[styles.buttonText, variant === 'secondary' && { color: '#17202a' }]}>{children}</Text>
+      )}
     </Pressable>
   );
 }
