@@ -7,7 +7,7 @@
 3. Install dependencies with `npm install`.
 4. Start Expo with `npm run start`.
 
-The app validates both public environment values when the Supabase client initializes. The Supabase service-role key must never be placed in `.env` or the Expo bundle.
+The app validates both public environment values when the Supabase client initializes. The Supabase service-role key must never be placed in `.env` or the Expo bundle. Schema, RLS, and seed workflow are documented in `supabase/README.md` and `docs/auth.md`.
 
 ## Two-session demo workflow
 
