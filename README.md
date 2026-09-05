@@ -1,56 +1,38 @@
-# Welcome to your Expo app 👋
+# Shotgun
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Shotgun is a student rideshare coordination app for finding and filling trusted, scheduled rides. It replaces an unstructured social-media post with searchable rides, verified student accounts, seat requests, live availability, and lightweight accountability.
 
-## Get started
+## Hackathon demo
 
-1. Install dependencies
+The demo should tell one complete story:
 
-   ```bash
-   npm install
-   ```
+1. A student signs in with a verified school email.
+2. A driver creates a scheduled ride with origin, destination, time, seats, stops, and a suggested contribution.
+3. A rider finds the ride using filters and requests a seat.
+4. The driver accepts; both users see the updated status and remaining seats.
+5. The ride is marked complete and both users can leave a rating.
 
-2. Start the app
+Everything else is secondary. See [TASKS.md](TASKS.md) for the work queue and [docs/product.md](docs/product.md) for scope.
 
-   ```bash
-   npx expo start
-   ```
+## Proposed stack
 
-In the output, you'll find options to open the app in a
+- Expo + React Native + TypeScript
+- Expo Router for file-based navigation and protected routes
+- NativeWind for Tailwind-style React Native styling
+- Supabase Auth, Postgres, Realtime, Storage, and Edge Functions
+- A single maps/directions provider behind a small adapter
+- Vitest or Jest for logic tests; Maestro only if there is time for one smoke flow
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Repository map
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- `AGENTS.md` — rules for Codex and contributors
+- `TASKS.md` — prioritized, owned hackathon backlog
+- `docs/product.md` — product scope and demo acceptance criteria
+- `docs/architecture.md` — technical decisions, data model, and security boundaries
+- `docs/team-workflow.md` — five-person GitHub and Codex workflow
+- `docs/decisions.md` — short decision log and unresolved questions
 
-## Get a fresh project
+## Start here
 
-When you're ready, run:
+Before implementation, the team should answer the questions at the top of [docs/decisions.md](docs/decisions.md), agree on the hackathon deadline, and assign the five workstreams in [TASKS.md](TASKS.md).
 
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-### Other setup steps
-
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
