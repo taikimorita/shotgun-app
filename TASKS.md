@@ -7,7 +7,7 @@ Assumption: five people, roughly 24–48 hours, one polished mobile demo. Re-est
 - [ ] **P0 / S / Lead:** Answer the nine open questions in `docs/decisions.md` and record changes.
 - [ ] **P0 / S / A:** Create a six-screen low-fidelity flow: sign-in, discovery, ride details, create ride, requests, profile.
 - [ ] **P0 / S / B:** Scaffold Expo TypeScript, Expo Router, NativeWind, lint, typecheck, test command, and `.env.example`.
-- [ ] **P0 / S / E:** Create Supabase project ownership/recovery plan and local migration workflow.
+- [x] **P0 / S / E:** Create Supabase project ownership/recovery plan and local migration workflow.
 - [ ] **P0 / S / Lead:** Configure GitHub labels, issue/PR templates, branch protection, and CODEOWNERS.
 - [ ] **P0 / S / All:** Agree on TypeScript contracts for `Profile`, `Ride`, `Booking`, `Place`, and `RouteSummary`.
 
@@ -24,10 +24,10 @@ Exit gate: every P0 item has one owner, app boots on the demo device, and no ext
 
 ### B — client foundation
 
-- [ ] **P0 / M:** Implement public/authenticated route groups, session restoration, and sign-out.
-- [ ] **P0 / M:** Build shared `Screen`, `Button`, `Input`, `Card`, `Badge`, `Avatar`, `StatusPill`, and loading/empty/error components.
-- [ ] **P0 / S:** Add typed environment validation and Supabase client initialization.
-- [ ] **P0 / S:** Add a dev/demo account switch or documented two-session workflow without bypassing production authorization.
+- [x] **P0 / M:** Implement public/authenticated route groups, session restoration, and sign-out.
+- [x] **P0 / M:** Build shared `Screen`, `Button`, `Input`, `Card`, `Badge`, `Avatar`, `StatusPill`, and loading/empty/error components.
+- [x] **P0 / S:** Add typed environment validation and Supabase client initialization.
+- [x] **P0 / S:** Add a dev/demo account switch or documented two-session workflow without bypassing production authorization.
 
 ### C — rides frontend
 
@@ -43,10 +43,10 @@ Exit gate: every P0 item has one owner, app boots on the demo device, and no ext
 
 ### E — backend/security
 
-- [ ] **P0 / M:** Create migrations for profiles, vehicles, rides, stops, bookings, ratings, and reports.
-- [ ] **P0 / M:** Add grants, RLS policies, constraints, indexes, and allow/deny DB tests.
-- [ ] **P0 / M:** Configure school auth path and document fallback.
-- [ ] **P0 / S:** Create deterministic seed data for the demo story.
+- [x] **P0 / M:** Create migrations for profiles, vehicles, rides, stops, bookings, ratings, and reports.
+- [x] **P0 / M:** Add grants, RLS policies, constraints, indexes, and allow/deny DB tests.
+- [x] **P0 / M:** Configure school auth path and document fallback.
+- [x] **P0 / S:** Create deterministic seed data for the demo story.
 
 Exit gate: UI can run end-to-end on fixtures, schema resets cleanly, and auth works for at least one approved account.
 

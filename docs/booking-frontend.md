@@ -4,7 +4,7 @@ Fixture-backed Expo Router booking screens for the Milestone 1 D deliverable.
 
 ## Run
 
-Install the dependencies with `npm install`, then use `npm start`. The default screen is **Your rides**. It links to the passenger-request screen and the sample ride details screen.
+Install the dependencies with `npm install`, then use `npm start`. After sign-in, the default screen is **Your rides**. It links to the passenger-request screen and the sample ride details screen.
 
 ## Demo paths
 
@@ -14,4 +14,4 @@ Install the dependencies with `npm install`, then use `npm start`. The default s
 - `/requests` — driver request queue; Accept and Decline update the mock service.
 - `/upcoming` — rider’s accepted and pending ride list.
 
-`src/services/mockBookingService.ts` is the sole state boundary. Replace its methods with the Supabase booking calls in Milestone 2 without changing the screen APIs.
+The routes live in the authenticated `(app)` route group, so a restored Supabase session is required. `src/services/mockBookingService.ts` is the sole booking-state boundary. Replace its methods with the Supabase booking calls in Milestone 2 without changing the screen APIs.

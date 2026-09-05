@@ -1,0 +1,25 @@
+---
+description: Follow AGENTS.md and docs as the only product/engineering source of truth
+alwaysApply: true
+---
+
+# Shotgun source of truth
+
+Follow `AGENTS.md`, `docs/product.md`, and `docs/architecture.md`. If a task needs a new dependency, table, secret, or product decision, record it in `docs/decisions.md`.
+
+Do not invent schema, payments, chat, admin, or extra tables from older prompt packs. Those are not the spec.
+
+## Do
+
+- Implement only the assigned issue (or the smallest demo slice if there is no issue).
+- Inspect existing code and tests before adding abstractions.
+- Keep screens free of direct maps, routing, identity, gas-price, and notification API calls — one typed module per concern.
+- Treat remaining seats as server-derived; clients must not freely write seat availability.
+- Enable and respect RLS on every exposed table.
+
+## Don't
+
+- Add Stripe or any in-app payment processing.
+- Put service-role keys or other secrets in the Expo bundle or Git.
+- Add Redux or a second component library unless the assigned issue requires it.
+- Duplicate or override `AGENTS.md` with a parallel product model.

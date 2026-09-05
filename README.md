@@ -31,8 +31,14 @@ Everything else is secondary. See [TASKS.md](TASKS.md) for the work queue and [d
 - `docs/architecture.md` — technical decisions, data model, and security boundaries
 - `docs/team-workflow.md` — five-person GitHub and Codex workflow
 - `docs/decisions.md` — short decision log and unresolved questions
+- `docs/auth.md` — school auth path and demo-account seeding
+- `supabase/` — migrations, seed, RLS tests, local CLI config
 
 ## Start here
 
-Before implementation, the team should answer the questions at the top of [docs/decisions.md](docs/decisions.md), agree on the hackathon deadline, and assign the five workstreams in [TASKS.md](TASKS.md).
+1. Copy `.env.example` to `.env` and add the publishable Supabase URL and anon key (local values come from `npx supabase start`).
+2. Backend owners: follow [supabase/README.md](supabase/README.md) to reset, seed, and test RLS.
+3. Auth setup (Entra vs school-domain magic link) is in [docs/auth.md](docs/auth.md).
+
+See [TASKS.md](TASKS.md) for the work queue and [docs/product.md](docs/product.md) for scope.
 

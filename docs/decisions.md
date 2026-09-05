@@ -4,14 +4,14 @@ Keep entries short. A decision is useful only if it prevents the team from reope
 
 ## Questions to answer before implementation
 
-1. How long is the hackathon, and which iOS/Android device will be used for judging?
+1. Resolved in D-010: the deadline is September 6, 2026, and the primary demo device is an iPhone 17 Pro.
 2. Is the first campus Cal Poly SLO, and what exact student email domain(s) are valid?
 3. Does anyone have permission to register an app in the school's Microsoft Entra tenant? If not, approve school-domain magic-link auth for the demo.
 4. Is “upload Poly ID” a judging requirement, or is verified school email sufficient? The recommendation is not to collect ID images in the MVP.
-5. Is a maps API key/credit already available, and for which provider?
+5. Partially resolved in D-013: use live place search, directions, and map preview, but the provider, key ownership, and quota are still unanswered.
 6. Is the driver offering seats in their own car? The current model assumes yes; “rider determines available seats” appears to mean the ride creator/driver.
-7. Should a booking always represent one seat for MVP, or may one rider request multiple seats?
-8. Are prices per seat or total trip contribution? The recommendation is per-seat integer cents.
+7. Resolved in D-011: one booking request represents exactly one seat for MVP.
+8. Resolved in D-011: prices are per-seat contributions represented as integer cents and displayed as dollars and cents.
 9. Should comfort preferences such as women-only be in the demo? If yes, define eligibility, enforcement, and inclusive wording before implementation.
 
 ## Accepted defaults until changed
@@ -52,6 +52,46 @@ Participant messages, if built, use authenticated access and RLS. E2EE is deferr
 
 Build and test for the agreed judging device first. Cross-platform parity follows only if P0 is stable.
 
+### D-010 — Demo device and deadline
+
+Date: 2026-09-05
+Owner: team lead
+Status: accepted
+
+Decision: Optimize and verify the demo on an iPhone 17 Pro. The hackathon deadline is September 6, 2026.
+Reason: The team confirmed the judging target and delivery date.
+Consequences: UI evidence and the three-run smoke test use this device target first. Scope cuts happen before adding cross-platform polish.
+
+### D-011 — One-seat requests and per-seat pricing
+
+Date: 2026-09-05
+Owner: team lead
+Status: accepted
+
+Decision: Each booking request is for exactly one seat. A driver sets the ride's total seat capacity. Ride prices are per-seat contributions stored as integer cents and displayed as dollars and cents.
+Reason: This keeps booking and pricing behavior unambiguous for the MVP demo.
+Consequences: Booking inputs do not request a seat quantity. Clients never write remaining-seat counts; accepted bookings determine availability atomically.
+
+### D-012 — Los Angeles display timezone
+
+Date: 2026-09-05
+Owner: team lead
+Status: accepted
+
+Decision: Persist ride times as UTC timestamps and display demo ride times in the `America/Los_Angeles` IANA timezone.
+Reason: The Cal Poly demo is based in California and needs deterministic date/time filtering and display.
+Consequences: Forms convert local input to UTC at their boundary, and filters/tests include daylight-saving behavior through the IANA timezone rather than a fixed offset.
+
+### D-013 — Live maps without live driver tracking
+
+Date: 2026-09-05
+Owner: team lead
+Status: accepted
+
+Decision: Use a live maps provider for place search, directions, and an interactive route preview. Continuous driver tracking and background location remain out of scope. Keep the deterministic fixture/static fallback required by the demo plan.
+Reason: The team wants a real map experience while preserving the smallest reliable hackathon flow.
+Consequences: Owner C must use the typed `MapsService` boundary. Provider choice, key ownership, quota, client-versus-server key restrictions, and approved dependency must be resolved before live-map implementation.
+
 ## Decision entry template
 
 ```md
@@ -65,4 +105,3 @@ Decision:
 Reason:
 Consequences:
 ```
-

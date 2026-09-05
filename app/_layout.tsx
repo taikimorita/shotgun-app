@@ -1,5 +1,14 @@
-import { Stack } from "expo-router";
+import { Stack } from 'expo-router';
+
+import { SessionProvider } from '@/src/auth/SessionProvider';
 
 export default function RootLayout() {
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <SessionProvider>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(public)" />
+        <Stack.Screen name="(app)" />
+      </Stack>
+    </SessionProvider>
+  );
 }
