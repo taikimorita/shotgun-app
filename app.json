@@ -1,0 +1,9 @@
+{
+  "expo": {
+    "name": "Shotgun",
+    "slug": "shotgun-booking-demo",
+    "scheme": "shotgun",
+    "plugins": ["expo-router"],
+    "experiments": { "typedRoutes": false }
+  }
+}
