@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "Shotgun",
+    "slug": "shotgun",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "scheme": "shotgun",
+    "userInterfaceStyle": "light",
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
