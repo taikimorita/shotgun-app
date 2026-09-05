@@ -18,12 +18,23 @@ export function SessionProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     let isMounted = true;
 
-    supabase.auth.getSession().then(({ data: { session: restoredSession } }) => {
-      if (isMounted) {
-        setSession(restoredSession);
-        setIsLoading(false);
-      }
-    });
+    supabase.auth
+      .getSession()
+      .then(({ data: { session: restoredSession } }) => {
+        if (isMounted) {
+          setSession(restoredSession);
+        }
+      })
+      .catch(() => {
+        if (isMounted) {
+          setSession(null);
+        }
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
 
     const { data } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
