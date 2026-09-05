@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Shotgun exact login preview</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #eaf3f9; }
+      .phone { position: relative; width: min(100vw, 492px); aspect-ratio: 492 / 909; }
+      img { display: block; width: 100%; height: 100%; }
+      .continue { position: absolute; left: 9%; right: 9%; bottom: 6.3%; height: 7.4%; border: 0; border-radius: 12px; background: transparent; cursor: pointer; }
+      .continue:active { opacity: .72; }
+      .continue:focus-visible { outline: 3px solid #102a43; outline-offset: 3px; }
+    </style>
+  </head>
+  <body>
+    <main class="phone">
+      <img alt="Shotgun student rideshare login" src="login-reference.png" />
+      <button class="continue" aria-label="Continue"></button>
+    </main>
+  </body>
+</html>
