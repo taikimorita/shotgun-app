@@ -24,10 +24,10 @@ Exit gate: every P0 item has one owner, app boots on the demo device, and no ext
 
 ### B — client foundation
 
-- [ ] **P0 / M:** Implement public/authenticated route groups, session restoration, and sign-out.
-- [ ] **P0 / M:** Build shared `Screen`, `Button`, `Input`, `Card`, `Badge`, `Avatar`, `StatusPill`, and loading/empty/error components.
-- [ ] **P0 / S:** Add typed environment validation and Supabase client initialization.
-- [ ] **P0 / S:** Add a dev/demo account switch or documented two-session workflow without bypassing production authorization.
+- [x] **P0 / M:** Implement public/authenticated route groups, session restoration, and sign-out.
+- [x] **P0 / M:** Build shared `Screen`, `Button`, `Input`, `Card`, `Badge`, `Avatar`, `StatusPill`, and loading/empty/error components.
+- [x] **P0 / S:** Add typed environment validation and Supabase client initialization.
+- [x] **P0 / S:** Add a dev/demo account switch or documented two-session workflow without bypassing production authorization.
 
 ### C — rides frontend
 
