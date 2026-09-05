@@ -3,8 +3,15 @@ type PublicEnv = {
   supabaseAnonKey: string;
 };
 
-function requiredPublicEnv(name: string): string {
-  const value = process.env[name];
+const PUBLIC_ENV = {
+  EXPO_PUBLIC_SUPABASE_URL: process.env.EXPO_PUBLIC_SUPABASE_URL,
+  EXPO_PUBLIC_SUPABASE_ANON_KEY: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+} as const;
+
+type PublicEnvKey = keyof typeof PUBLIC_ENV;
+
+function requiredPublicEnv(name: PublicEnvKey): string {
+  const value = PUBLIC_ENV[name];
   if (!value) {
     throw new Error(`Missing required environment variable: ${name}`);
   }
