@@ -2,7 +2,7 @@ import { createMockMapsService } from "../mockMapsService";
 import { createSupabaseMapsService } from "../supabaseMapsService";
 import { calPoly, downtownSlo, sfo } from "../fixtures";
 import { withMapsFallback, withRouteFallback } from "../../../lib/maps";
-import { regionForPlaces, uniqueRideDestinations } from "../mapPresentation";
+import { regionForPlaces, uniqueAvailableRoutePoints } from "../mapPresentation";
 import type { Ride } from "../types";
 
 function fail(message: string): never {
@@ -111,13 +111,13 @@ async function run() {
   await assertRejects(() => malformedLegs.getRoute([calPoly, sfo]));
 
   const mapRides = [
-    { id: "one", destination: sfo, remainingSeats: 2, status: "scheduled" },
-    { id: "duplicate", destination: { ...sfo, id: "same-coordinates" }, remainingSeats: 1, status: "scheduled" },
-    { id: "two", destination: downtownSlo, remainingSeats: 3, status: "scheduled" },
-    { id: "full", destination: calPoly, remainingSeats: 0, status: "scheduled" },
-    { id: "cancelled", destination: calPoly, remainingSeats: 2, status: "cancelled" },
+    { id: "one", stops: [downtownSlo], destination: sfo, remainingSeats: 2, status: "scheduled" },
+    { id: "duplicate", stops: [], destination: { ...sfo, id: "same-coordinates" }, remainingSeats: 1, status: "scheduled" },
+    { id: "two", stops: [], destination: downtownSlo, remainingSeats: 3, status: "scheduled" },
+    { id: "full", stops: [], destination: calPoly, remainingSeats: 0, status: "scheduled" },
+    { id: "cancelled", stops: [], destination: calPoly, remainingSeats: 2, status: "cancelled" },
   ] as Ride[];
-  assertDeepEqual(uniqueRideDestinations(mapRides).map((place) => place.id), [sfo.id, downtownSlo.id]);
+  assertDeepEqual(uniqueAvailableRoutePoints(mapRides).map((place) => place.id), [downtownSlo.id, sfo.id]);
   const mapRegion = regionForPlaces([calPoly, sfo]);
   assertOk(mapRegion.latitudeDelta > Math.abs(sfo.lat - calPoly.lat));
   assertOk(mapRegion.longitudeDelta > Math.abs(sfo.lng - calPoly.lng));

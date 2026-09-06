@@ -97,6 +97,8 @@ export interface NormalizedRideDraft {
 
 export interface RideFilters {
   destinationQuery?: string;
+  pickupPlace?: Place;
+  routePointPlace?: Place;
   departureAtGte?: string;
   departureAtLte?: string;
   maxPriceCents?: number;

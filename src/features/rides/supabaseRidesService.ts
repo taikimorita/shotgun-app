@@ -1,6 +1,7 @@
 import { SupabaseClient } from '@supabase/supabase-js';
 
 import type { Database } from '../../types/database';
+import { rideMatchesDiscoveryRoute } from './routeMatching';
 import { DEFAULT_DISPLAY_TIMEZONE, type DriverSummary, type Place, type Ride, type RideFilters, type RideDraftInput, type RideSeed, type RidesService, type RouteSummary, type VehicleSummary } from './types';
 
 export type RideListingRow = Database['public']['Views']['ride_listings']['Row'];
@@ -18,10 +19,6 @@ export interface SupabaseRideQuerySource {
 
 function fail(message: string): never {
   throw new Error(message);
-}
-
-function normalizeQuery(value: string) {
-  return value.trim().replace(/\s+/g, ' ').toLowerCase();
 }
 
 function compareRides(left: Ride, right: Ride) {
@@ -147,9 +144,6 @@ export function createSupabaseRideQuerySource(client: SupabaseClient<Database> =
         .eq('status', 'scheduled')
         .gt('departure_at', nowIso);
 
-      if (filters.destinationQuery) {
-        query = query.ilike('destination_label', `%${normalizeQuery(filters.destinationQuery)}%`);
-      }
       if (filters.departureAtGte) {
         query = query.gte('departure_at', filters.departureAtGte);
       }
@@ -225,7 +219,7 @@ export function createSupabaseRidesService(options?: { source?: SupabaseRideQuer
   return {
     async list(filters = {}) {
       const rows = await source.listRideListings({ nowIso: readClock().toISOString(), filters });
-      return hydrate(rows);
+      return (await hydrate(rows)).filter((ride) => rideMatchesDiscoveryRoute(ride, filters));
     },
     async getById(id: string) {
       const row = await source.getRideListing(id);

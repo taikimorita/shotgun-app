@@ -219,7 +219,7 @@ async function run() {
   assertDeepEqual(calls.getProfiles[0], ["driver-second", "driver-first"]);
   assertDeepEqual(calls.getVehicles[0], ["vehicle-second", "vehicle-first"]);
   assertDeepEqual(calls.getStops[0], ["ride-second", "ride-first"]);
-  assertDeepEqual(rides.map((ride) => ride.id), ["ride-first", "ride-second"]);
+  assertDeepEqual(rides.map((ride) => ride.id), ["ride-first"]);
 
   const first = rides[0];
   assertOk(first);
@@ -238,6 +238,14 @@ async function run() {
       lng: -120.6596,
     },
   ]);
+
+  const stopMatches = await service.list({ destinationQuery: "downtown" });
+  assertDeepEqual(stopMatches.map((ride) => ride.id), ["ride-first"]);
+
+  const wrongPickup = await service.list({
+    pickupPlace: { id: "place-sfo", label: "SFO", lat: 37.6213, lng: -122.379 },
+  });
+  assertDeepEqual(wrongPickup, []);
 
   const byId = await service.getById("ride-first");
   assertEqual(byId?.id, "ride-first");

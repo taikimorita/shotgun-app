@@ -1,13 +1,15 @@
 import type { Place, Ride } from "./types";
 
-export function uniqueRideDestinations(rides: readonly Ride[]) {
+export function uniqueAvailableRoutePoints(rides: readonly Ride[]) {
   const seen = new Set<string>();
   return rides.flatMap((ride) => {
     if (ride.status !== "scheduled" || ride.remainingSeats <= 0) return [];
-    const key = `${ride.destination.lat.toFixed(5)}:${ride.destination.lng.toFixed(5)}`;
-    if (seen.has(key)) return [];
-    seen.add(key);
-    return [{ ...ride.destination }];
+    return [...ride.stops, ride.destination].flatMap((place) => {
+      const key = `${place.lat.toFixed(5)}:${place.lng.toFixed(5)}`;
+      if (seen.has(key)) return [];
+      seen.add(key);
+      return [{ ...place }];
+    });
   });
 }
 

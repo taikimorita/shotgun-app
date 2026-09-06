@@ -1,12 +1,12 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import { colors, radii, semanticColors, spacing, typography } from "../../../theme/tokens";
-import { uniqueRideDestinations } from "../mapPresentation";
+import { uniqueAvailableRoutePoints } from "../mapPresentation";
 import type { Place, Ride } from "../types";
 
 export function RideDestinationsMap({ origin, rides }: { origin: Place | null; rides: Ride[] }) {
-  const destinations = uniqueRideDestinations(rides);
-  return <View accessibilityLabel="Static ride map fallback" style={styles.preview}><Text style={styles.kicker}>RIDE MAP</Text><Text style={styles.title}>{origin?.label ?? "Choose a pickup"}</Text><Text style={styles.body}>{destinations.length} available destination{destinations.length === 1 ? "" : "s"}: {destinations.map((place) => place.label).join(", ") || "none yet"}</Text></View>;
+  const routePoints = uniqueAvailableRoutePoints(rides);
+  return <View accessibilityLabel="Static ride map fallback" style={styles.preview}><Text style={styles.kicker}>RIDE MAP</Text><Text style={styles.title}>{origin?.label ?? "Choose a pickup"}</Text><Text style={styles.body}>{routePoints.length} available stop{routePoints.length === 1 ? "" : "s"}: {routePoints.map((place) => place.label).join(", ") || "none yet"}</Text></View>;
 }
 
 const styles = StyleSheet.create({

@@ -11,6 +11,7 @@ import {
   RouteSummary,
 } from "./types";
 import { assertRideDraftIsValid } from "./validation";
+import { rideMatchesDiscoveryRoute } from "./routeMatching";
 
 function clonePlace(place: Place): Place {
   return { ...place };
@@ -77,14 +78,8 @@ function toRide(seed: RideSeed): Ride {
   };
 }
 
-function normalizeQuery(value: string) {
-  return value.trim().replace(/\s+/g, " ").toLowerCase();
-}
-
 function matchesFilters(ride: Ride, filters: RideFilters) {
-  if (filters.destinationQuery && !normalizeQuery(ride.destination.label).includes(normalizeQuery(filters.destinationQuery))) {
-    return false;
-  }
+  if (!rideMatchesDiscoveryRoute(ride, filters)) return false;
   if (filters.departureAtGte && ride.departureAt < filters.departureAtGte) {
     return false;
   }

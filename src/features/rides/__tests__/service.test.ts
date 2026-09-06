@@ -110,6 +110,19 @@ async function run() {
   const sfoRides = await service.list({ destinationQuery: "sfo" });
   assertDeepEqual(sfoRides.map((ride) => ride.id), ["ride-maya-slo-sfo"]);
 
+  const morroBayStopRides = await service.list({ destinationQuery: "morro bay" });
+  assertDeepEqual(morroBayStopRides.map((ride) => ride.id), ["ride-jordan-slo-la"]);
+
+  const airportStopRides = await service.list({ destinationQuery: "santa barbara airport" });
+  assertDeepEqual(airportStopRides.map((ride) => ride.id), ["ride-jordan-slo-la", "ride-aria-slo-san-diego"]);
+
+  const nearbyAirportRides = await service.list({
+    pickupPlace: calPoly,
+    routePointPlace: { ...santaBarbaraAirport, id: "provider-sba", label: "Santa Barbara Municipal Airport" },
+  });
+  assertDeepEqual(nearbyAirportRides.map((ride) => ride.id), ["ride-jordan-slo-la", "ride-aria-slo-san-diego"]);
+  assertDeepEqual((await service.list({ pickupPlace: sfo })).map((ride) => ride.id), []);
+
   const highFareRides = await service.list({ maxPriceCents: 1000 });
   assertDeepEqual(highFareRides.map((ride) => ride.id), ["ride-aria-slo-sb"]);
 

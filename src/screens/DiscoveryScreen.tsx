@@ -38,6 +38,14 @@ const demoFilters: DiscoveryFilterValues = {
   minimumRemainingSeats: "2",
 };
 
+function withSelectedPlaces(filters: RideFilterQuery, pickup: Place | null, destination: Place | null): RideFilterQuery {
+  return {
+    ...filters,
+    pickupPlace: pickup ? { ...pickup } : undefined,
+    routePointPlace: destination ? { ...destination } : undefined,
+  };
+}
+
 function hasFilters(value: DiscoveryFilterValues) {
   return Object.values(value).some((entry) => entry.trim().length > 0);
 }
@@ -50,7 +58,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
   }, [mapsServiceProp]);
   const [draft, setDraft] = useState<DiscoveryFilterValues>({ ...emptyDiscoveryFilters });
   const [applied, setApplied] = useState<DiscoveryFilterValues>({ ...emptyDiscoveryFilters });
-  const [query, setQuery] = useState<RideFilterQuery>({});
+  const [query, setQuery] = useState<RideFilterQuery>({ pickupPlace: { ...calPoly } });
   const [pickup, setPickup] = useState<Place | null>({ ...calPoly });
   const [destination, setDestination] = useState<Place | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof DiscoveryFilterValues, string>>>({});
@@ -84,7 +92,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
     };
   }, [query, refreshKey, ridesService]);
 
-  function apply(next: DiscoveryFilterValues) {
+  function apply(next: DiscoveryFilterValues, selectedPickup = pickup, selectedDestination = destination) {
     const result = validateAndBuildRideFilters(next);
     if (!result.ok) {
       setErrors(result.errors);
@@ -95,7 +103,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
     setErrors({});
     setIsApplying(true);
     setLoadState("loading");
-    setQuery(result.filters);
+    setQuery(withSelectedPlaces(result.filters, selectedPickup, selectedDestination));
   }
 
   function clear() {
@@ -109,7 +117,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
     setErrors({});
     setIsApplying(true);
     setLoadState("loading");
-    setQuery(result.ok ? result.filters : {});
+    setQuery(withSelectedPlaces(result.ok ? result.filters : {}, pickup, destination));
   }
 
   function retry() {
@@ -129,18 +137,25 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
     setPickup({ ...calPoly });
     setLocationState({ status: "idle", error: "" });
     setDestination({ ...losAngeles });
-    apply(demoFilters);
+    apply(demoFilters, calPoly, losAngeles);
   }
 
   function changePickup(place: Place | null) {
     setPickup(place);
+    setIsApplying(true);
+    setLoadState("loading");
+    setQuery((current) => withSelectedPlaces(current, place, destination));
     setLocationState({ status: "idle", error: "" });
   }
 
   async function useCurrentLocation() {
     setLocationState({ status: "loading", error: "" });
     try {
-      setPickup(await locationService.getCurrentPlace());
+      const currentPlace = await locationService.getCurrentPlace();
+      setPickup(currentPlace);
+      setIsApplying(true);
+      setLoadState("loading");
+      setQuery((current) => withSelectedPlaces(current, currentPlace, destination));
       setLocationState({ status: "idle", error: "" });
     } catch (error) {
       setLocationState({ status: "error", error: error instanceof Error ? error.message : "Couldn’t get your current location." });
@@ -164,7 +179,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
           onViewRides={viewRides}
           pickup={pickup}
           rides={rides}
-          viewRidesDisabled={isApplying || !destination}
+          viewRidesDisabled={isApplying || !pickup || !destination}
           viewRidesLoading={isApplying}
         />
 
