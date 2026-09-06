@@ -1,30 +1,83 @@
 import { useState } from 'react';
-import { Alert, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 
 import { Button, Card, Input, Screen } from '@/src/components';
 import { supabase } from '@/src/lib/supabase';
+import { colors, semanticColors } from '@/src/theme/tokens';
+
+type SubmitAction = 'magicLink' | 'demo' | null;
 
 export default function SignInScreen() {
   const [email, setEmail] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submittingAction, setSubmittingAction] = useState<SubmitAction>(null);
+  const [statusMessage, setStatusMessage] = useState('');
+  const [statusTone, setStatusTone] = useState<'neutral' | 'error'>('neutral');
+
+  function setFeedback(message: string, tone: 'neutral' | 'error' = 'neutral') {
+    setStatusMessage(message);
+    setStatusTone(tone);
+  }
+
+  function normalizeError(error: unknown) {
+    return error instanceof Error ? error.message : 'Something went wrong. Please try again.';
+  }
 
   async function requestMagicLink() {
     const normalizedEmail = email.trim().toLowerCase();
     if (!normalizedEmail) {
-      Alert.alert('Email required', 'Enter your school email to continue.');
+      setFeedback('Enter your school email to continue.', 'error');
       return;
     }
 
-    setIsSubmitting(true);
-    const { error } = await supabase.auth.signInWithOtp({ email: normalizedEmail });
-    setIsSubmitting(false);
+    setSubmittingAction('magicLink');
+    setFeedback('Sending sign-in link...');
 
-    if (error) {
-      Alert.alert('Unable to sign in', error.message);
-      return;
+    try {
+      const { error } = await supabase.auth.signInWithOtp({ email: normalizedEmail });
+
+      if (error) {
+        setFeedback(normalizeError(error), 'error');
+        return;
+      }
+
+      setFeedback('Check your email for the sign-in link.');
+    } catch (error) {
+      setFeedback(normalizeError(error), 'error');
+    } finally {
+      setSubmittingAction(null);
     }
+  }
 
-    Alert.alert('Check your email', 'Use the sign-in link sent to your school email.');
+  async function continueAsMayaDemo() {
+    setSubmittingAction('demo');
+    setFeedback('Signing in as Maya...');
+
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: 'maya.demo@calpoly.edu',
+        password: 'ShotgunDemo!',
+      });
+
+      if (error) {
+        const setupMessage =
+          error.message.includes('Invalid login credentials') || error.message.includes('Email not confirmed')
+            ? 'Demo sign-in is not set up yet. The hosted Supabase project needs maya.demo@calpoly.edu with the documented password.'
+            : normalizeError(error);
+        setFeedback(setupMessage, 'error');
+        return;
+      }
+
+      if (!data.session) {
+        setFeedback('Demo sign-in did not create a session. Check the hosted Supabase auth setup.', 'error');
+        return;
+      }
+
+      setFeedback('Signed in as Maya. Loading the app...');
+    } catch (error) {
+      setFeedback(normalizeError(error), 'error');
+    } finally {
+      setSubmittingAction(null);
+    }
   }
 
   return (
@@ -36,9 +89,34 @@ export default function SignInScreen() {
         </View>
         <Card>
           <View style={{ gap: 14 }}>
-            <Text style={{ color: '#17202a', fontSize: 18, fontWeight: '600' }}>Sign in with your school email</Text>
+            <Text style={{ color: colors.ink, fontSize: 18, fontWeight: '600' }}>Sign in with your school email</Text>
             <Input autoCapitalize="none" autoComplete="email" keyboardType="email-address" onChangeText={setEmail} placeholder="you@calpoly.edu" value={email} />
-            <Button loading={isSubmitting} onPress={requestMagicLink}>Send sign-in link</Button>
+            <Button disabled={submittingAction !== null && submittingAction !== 'magicLink'} loading={submittingAction === 'magicLink'} onPress={requestMagicLink}>
+              Send sign-in link
+            </Button>
+            {__DEV__ ? (
+              <Button disabled={submittingAction !== null && submittingAction !== 'demo'} loading={submittingAction === 'demo'} onPress={continueAsMayaDemo} variant="secondary">
+                Continue as Maya (demo)
+              </Button>
+            ) : null}
+            {statusMessage ? (
+              <Text
+                accessibilityLiveRegion="polite"
+                accessibilityRole={statusTone === 'error' ? 'alert' : 'text'}
+                style={{
+                  color: statusTone === 'error' ? semanticColors.status.dangerForeground : colors.text,
+                  fontSize: 14,
+                  lineHeight: 20,
+                }}
+              >
+                {statusMessage}
+              </Text>
+            ) : null}
+            {__DEV__ ? (
+              <Text style={{ color: colors.textMuted, fontSize: 13, lineHeight: 18 }}>
+                Demo sign-in uses the fictional hosted account documented in the auth setup and creates a real Supabase session.
+              </Text>
+            ) : null}
           </View>
         </Card>
       </View>
