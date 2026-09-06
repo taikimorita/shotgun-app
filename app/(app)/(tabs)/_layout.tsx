@@ -43,7 +43,7 @@ export default function TabsLayout() {
           borderTopColor: semanticColors.app.border,
           borderTopWidth: 1,
           height: 72,
-          paddingTop: spacing[2],
+          paddingTop: spacing[1],
         },
       }}
     >
