@@ -1,4 +1,4 @@
-import { Redirect, Stack } from 'expo-router';
+import { Redirect, Stack, type Href } from 'expo-router';
 
 import { LoadingState } from '@/src/components';
 import { useSession } from '@/src/auth/SessionProvider';
@@ -11,7 +11,7 @@ export default function PublicLayout() {
   }
 
   if (session) {
-    return <Redirect href="/(app)" />;
+    return <Redirect href={'/(app)/(tabs)' as Href} />;
   }
 
   return <Stack screenOptions={{ headerShown: false }} />;

@@ -14,5 +14,11 @@ export default function AuthenticatedLayout() {
     return <Redirect href="/(public)/sign-in" />;
   }
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="requests" />
+      <Stack.Screen name="rides/[rideId]" />
+    </Stack>
+  );
 }
