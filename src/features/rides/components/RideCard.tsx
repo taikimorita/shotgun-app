@@ -11,6 +11,11 @@ type RideCardProps = {
 };
 
 export function RideCard({ ride, onPress, requestable }: RideCardProps) {
+  const availability = requestable
+    ? `${ride.remainingSeats} seat${ride.remainingSeats === 1 ? "" : "s"} available`
+    : ride.remainingSeats > 0
+      ? "currently unavailable to request"
+      : "full";
   const content = (
     <>
       <View style={styles.headerRow}>
@@ -25,7 +30,7 @@ export function RideCard({ ride, onPress, requestable }: RideCardProps) {
     return (
       <Pressable
         accessibilityRole="button"
-        accessibilityLabel={`View ride from ${ride.origin.label} to ${ride.destination.label}`}
+        accessibilityLabel={`View ride from ${ride.origin.label} to ${ride.destination.label}, ${availability}`}
         onPress={onPress}
         style={({ pressed }) => [styles.card, pressed && styles.pressed]}
       >

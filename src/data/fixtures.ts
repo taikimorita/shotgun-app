@@ -1,91 +1,70 @@
+import { fixtureRideSeeds, mayaDriver } from "../features/rides/fixtures";
 import { Booking, Ride } from "../types/booking";
 
 export const currentUser = {
-  id: "rider-maya",
-  name: "Maya Chen",
-  initials: "MC",
+  id: mayaDriver.id,
+  name: mayaDriver.name,
+  initials: mayaDriver.initials,
 };
 
-export const rides: Ride[] = [
-  {
-    id: "ride-slo-sf",
-    driverId: "driver-jordan",
-    driverName: "Jordan Rivera",
-    driverInitials: "JR",
-    driverRating: 4.9,
-    dateLabel: "Fri, May 16",
-    departureTime: "3:30 PM",
-    origin: "Cal Poly Library",
-    destination: "San Francisco, Mission District",
-    vehicle: "2022 Subaru Outback · Blue",
-    pricePerSeat: 24,
-    totalSeats: 3,
-    availableSeats: 2,
-    notes: "One small bag is welcome. I can make a quick stop in San Mateo.",
-  },
-  {
-    id: "ride-slo-la",
-    driverId: currentUser.id,
-    driverName: currentUser.name,
-    driverInitials: currentUser.initials,
-    driverRating: 4.8,
-    dateLabel: "Sun, May 18",
-    departureTime: "10:00 AM",
-    origin: "Cal Poly Recreation Center",
-    destination: "Los Angeles, Union Station",
-    vehicle: "2021 Honda CR-V · Silver",
-    pricePerSeat: 20,
-    totalSeats: 3,
-    availableSeats: 1,
-    notes: "Leaving promptly at 10. Please bring headphones for the ride.",
-  },
-  {
-    id: "ride-slo-sb",
-    driverId: "driver-aria",
-    driverName: "Aria Thompson",
-    driverInitials: "AT",
-    driverRating: 4.7,
-    dateLabel: "Sat, May 17",
-    departureTime: "9:15 AM",
-    origin: "Cal Poly Campus Market",
-    destination: "Santa Barbara, State Street",
-    vehicle: "2020 Toyota RAV4 · Green",
-    pricePerSeat: 16,
-    totalSeats: 3,
-    availableSeats: 2,
-    notes: "Happy to take a coffee stop on the way down.",
-  },
-];
+function formatDeparture(departureAt: string, timeZone: string) {
+  const departure = new Date(departureAt);
+  return {
+    dateLabel: new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+    }).format(departure),
+    departureTime: new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      hour: "numeric",
+      minute: "2-digit",
+    }).format(departure),
+  };
+}
+
+export const rides: Ride[] = fixtureRideSeeds.map((ride) => {
+  const acceptedSeats = ride.bookings
+    .filter((booking) => booking.status === "accepted")
+    .reduce((sum, booking) => sum + booking.seats, 0);
+
+  return {
+    id: ride.id,
+    driverId: ride.driver.id,
+    driverName: ride.driver.name,
+    driverInitials: ride.driver.initials,
+    driverRating: ride.driver.ratingAverage ?? 0,
+    ...formatDeparture(ride.departureAt, ride.displayTimezone),
+    origin: ride.origin.label,
+    destination: ride.destination.label,
+    vehicle: ride.vehicle.label,
+    pricePerSeat: ride.priceCents / 100,
+    totalSeats: ride.capacity,
+    availableSeats: ride.capacity - acceptedSeats,
+    notes: ride.notes ?? undefined,
+  };
+});
 
 export const initialBookings: Booking[] = [
   {
-    id: "booking-approved",
-    rideId: "ride-slo-sf",
-    riderId: currentUser.id,
-    riderName: currentUser.name,
-    riderInitials: currentUser.initials,
-    seats: 1,
-    status: "accepted",
-    createdAt: "2025-05-11T10:00:00Z",
-  },
-  {
     id: "booking-pending",
-    rideId: "ride-slo-la",
+    rideId: "ride-maya-slo-sfo",
     riderId: "rider-sam",
     riderName: "Sam Patel",
     riderInitials: "SP",
     seats: 1,
     status: "pending",
-    createdAt: "2025-05-12T12:00:00Z",
+    createdAt: "2026-09-05T19:00:00Z",
   },
   {
     id: "booking-declined",
-    rideId: "ride-slo-la",
+    rideId: "ride-maya-slo-sfo",
     riderId: "rider-olivia",
     riderName: "Olivia Kim",
     riderInitials: "OK",
     seats: 1,
     status: "declined",
-    createdAt: "2025-05-10T09:00:00Z",
+    createdAt: "2026-09-05T18:30:00Z",
   },
 ];

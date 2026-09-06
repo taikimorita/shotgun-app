@@ -1,4 +1,4 @@
-import { initialBookings } from "../data/fixtures";
+import { initialBookings, rides } from "../data/fixtures";
 import { Booking, BookingStatus } from "../types/booking";
 
 type Listener = (bookings: Booking[]) => void;
@@ -26,6 +26,16 @@ export const mockBookingService = {
   },
   async request(rideId: string, rider: { id: string; name: string; initials: string }) {
     await wait();
+    const ride = rides.find((item) => item.id === rideId);
+    if (!ride) {
+      throw new Error("Ride not found.");
+    }
+    if (ride.driverId === rider.id) {
+      throw new Error("You can’t request a seat on your own ride.");
+    }
+    if (ride.availableSeats === 0) {
+      throw new Error("This ride is full.");
+    }
     const existing = bookings.find((booking) => booking.rideId === rideId && booking.riderId === rider.id);
     if (existing && existing.status !== "cancelled" && existing.status !== "declined") {
       throw new Error("You already have an active request for this ride.");

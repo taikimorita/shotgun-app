@@ -5,6 +5,25 @@ export interface MapsService {
   getRoute(stops: Place[]): Promise<RouteSummary>;
 }
 
+export function withMapsFallback(primary: MapsService, fallback: MapsService): MapsService {
+  return {
+    async searchPlaces(query) {
+      try {
+        return await primary.searchPlaces(query);
+      } catch {
+        return fallback.searchPlaces(query);
+      }
+    },
+    async getRoute(stops) {
+      try {
+        return await primary.getRoute(stops);
+      } catch {
+        return fallback.getRoute(stops);
+      }
+    },
+  };
+}
+
 export type MockMapsFailureMode = "search" | "route" | "all";
 
 export interface MockMapsServiceOptions {

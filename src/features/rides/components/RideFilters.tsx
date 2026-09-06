@@ -136,7 +136,7 @@ const styles = StyleSheet.create({
   subtitle: { color: colors.textMuted, fontSize: typography.fontSize.sm, lineHeight: 20 },
   appliedBadge: { backgroundColor: semanticColors.status.successBackground, borderRadius: radii.pill, color: semanticColors.status.successForeground, fontSize: typography.fontSize.xs, fontWeight: typography.fontWeight.bold, overflow: "hidden", paddingHorizontal: spacing[3], paddingVertical: spacing[2] },
   field: { gap: spacing[2] },
-  label: { color: colors.ink, fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.bold, letterSpacing: typography.letterSpacing.label, textTransform: "uppercase" },
+  label: { color: colors.ink, fontSize: typography.fontSize.sm, fontWeight: typography.fontWeight.bold, letterSpacing: typography.letterSpacing.label, lineHeight: 18, minHeight: 36, textTransform: "uppercase" },
   input: { backgroundColor: semanticColors.app.surfaceMuted, borderColor: semanticColors.app.border, borderRadius: radii.md, borderWidth: 1, color: colors.ink, fontSize: typography.fontSize.md, minHeight: 48, paddingHorizontal: spacing[4], paddingVertical: spacing[3] },
   inputDisabled: { color: colors.textMuted },
   helper: { color: colors.textMuted, fontSize: typography.fontSize.xs, lineHeight: 18 },

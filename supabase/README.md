@@ -34,6 +34,17 @@ EXPO_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
 EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon key from supabase start>
 ```
 
+### Geoapify maps proxy
+
+Find place search calls the authenticated `geoapify-maps` Edge Function. Keep the provider key server-side:
+
+```sh
+npx supabase secrets set GEOAPIFY_API_KEY=<key>
+npx supabase functions deploy geoapify-maps
+```
+
+For local development, put `GEOAPIFY_API_KEY` in an ignored env file and serve the function with `npx supabase functions serve geoapify-maps --env-file <path>`. If the function or provider is unavailable, Find automatically uses the deterministic demo locations.
+
 ## Hosted project
 
 1. Create the project in the shared org.
