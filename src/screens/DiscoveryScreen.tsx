@@ -13,6 +13,7 @@ import { DiscoveryMapHeader } from "../features/rides/components/DiscoveryMapHea
 import { RideCard } from "../features/rides/components/RideCard";
 import { RideFilters } from "../features/rides/components/RideFilters";
 import { calPoly, fixtureNowIso, sfo } from "../features/rides/fixtures";
+import { ridesNearDestination } from "../features/rides/mapPresentation";
 import { createMockMapsService } from "../features/rides/mockMapsService";
 import { createSupabaseMapsService } from "../features/rides/supabaseMapsService";
 import { fixtureRidesService } from "../features/rides/service";
@@ -99,10 +100,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
   }
 
   function clear() {
-    const next = {
-      ...emptyDiscoveryFilters,
-      destinationQuery: destination?.label ?? "",
-    };
+    const next = { ...emptyDiscoveryFilters };
     const result = validateAndBuildRideFilters(next);
     setDraft(next);
     setApplied(next);
@@ -119,10 +117,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
   }
 
   function viewRides() {
-    apply({
-      ...draft,
-      destinationQuery: destination?.label ?? draft.destinationQuery,
-    });
+    apply(draft);
   }
 
   function useDemoPreset() {
@@ -147,7 +142,8 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
     }
   }
 
-  const filtered = hasFilters(applied);
+  const displayedRides = destination ? ridesNearDestination(rides, destination) : rides;
+  const filtered = hasFilters(applied) || Boolean(destination);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -163,7 +159,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
           onUseCurrentLocation={useCurrentLocation}
           onViewRides={viewRides}
           pickup={pickup}
-          rides={rides}
+          rides={destination ? displayedRides : rides}
           viewRidesDisabled={isApplying || !destination}
           viewRidesLoading={isApplying}
         />
@@ -185,7 +181,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
         <View style={styles.sectionHeader}>
           <View>
             <Text style={styles.sectionTitle}>{filtered ? "Matching rides" : "Upcoming rides"}</Text>
-            <Text style={styles.sectionSubtitle}>{loadState === "ready" ? `${rides.length} ride${rides.length === 1 ? "" : "s"} found` : "Finding the best options"}</Text>
+            <Text style={styles.sectionSubtitle}>{loadState === "ready" ? `${displayedRides.length} ride${displayedRides.length === 1 ? "" : "s"} ${destination ? "near that destination" : "found"}` : "Finding the best options"}</Text>
           </View>
           <Pressable accessibilityRole="button" disabled={isApplying} onPress={retry} style={({ pressed }) => [styles.refreshButton, (pressed || isApplying) && styles.buttonMuted]}>
             <Text style={styles.refreshText}>Refresh</Text>
@@ -200,14 +196,14 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
             <Text accessibilityRole="alert" style={styles.stateText}>{loadError}</Text>
             <Pressable accessibilityRole="button" onPress={retry} style={styles.primaryButton}><Text style={styles.primaryText}>Try again</Text></Pressable>
           </View>
-        ) : rides.length === 0 ? (
+        ) : displayedRides.length === 0 ? (
           <View style={styles.stateCard}>
-            <Text style={styles.emptyTitle}>{filtered ? "No rides match yet" : "No upcoming rides"}</Text>
-            <Text style={styles.stateText}>{filtered ? "Clear a filter or try another destination." : "Be the first student to post a ride."}</Text>
-            {filtered ? <Pressable accessibilityRole="button" onPress={clear} style={styles.primaryButton}><Text style={styles.primaryText}>Clear filters</Text></Pressable> : null}
+            <Text style={styles.emptyTitle}>{destination ? "No rides near that destination" : filtered ? "No rides match yet" : "No upcoming rides"}</Text>
+            <Text style={styles.stateText}>{destination ? "Try another destination or clear the map search." : filtered ? "Clear a filter or try another destination." : "Be the first student to post a ride."}</Text>
+            {destination ? <Pressable accessibilityRole="button" onPress={() => setDestination(null)} style={styles.primaryButton}><Text style={styles.primaryText}>Clear destination</Text></Pressable> : filtered ? <Pressable accessibilityRole="button" onPress={clear} style={styles.primaryButton}><Text style={styles.primaryText}>Clear filters</Text></Pressable> : null}
           </View>
         ) : (
-          rides.map((ride) => (
+          displayedRides.map((ride) => (
             <RideCard
               key={ride.id}
               onPress={() => router.push(`/rides/${ride.id}` as Href)}
