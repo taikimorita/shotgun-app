@@ -1,9 +1,19 @@
 import { useState } from 'react';
-import { Text, View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
+import {
+  ActivityIndicator,
+  Image,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Button, Card, Input, Screen } from '@/src/components';
 import { supabase } from '@/src/lib/supabase';
-import { colors, semanticColors } from '@/src/theme/tokens';
+import { colors, radii, semanticColors, spacing, typography } from '@/src/theme/tokens';
 
 type SubmitAction = 'magicLink' | 'demo' | null;
 
@@ -80,46 +90,216 @@ export default function SignInScreen() {
     }
   }
 
+  const magicLinkSubmitting = submittingAction === 'magicLink';
+  const demoSubmitting = submittingAction === 'demo';
+
   return (
-    <Screen>
-      <View style={{ flex: 1, justifyContent: 'center', gap: 20 }}>
-        <View style={{ gap: 8 }}>
-          <Text style={{ color: '#17202a', fontSize: 32, fontWeight: '700' }}>Shotgun</Text>
-          <Text style={{ color: '#667085', fontSize: 16, lineHeight: 24 }}>Find a trusted ride with your campus community.</Text>
-        </View>
-        <Card>
-          <View style={{ gap: 14 }}>
-            <Text style={{ color: colors.ink, fontSize: 18, fontWeight: '600' }}>Sign in with your school email</Text>
-            <Input autoCapitalize="none" autoComplete="email" keyboardType="email-address" onChangeText={setEmail} placeholder="you@calpoly.edu" value={email} />
-            <Button disabled={submittingAction !== null && submittingAction !== 'magicLink'} loading={submittingAction === 'magicLink'} onPress={requestMagicLink}>
-              Send sign-in link
-            </Button>
+    <SafeAreaView style={styles.screen}>
+      <StatusBar style="light" />
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.phone}>
+          <View style={styles.hero}>
+            <Image
+              accessibilityLabel="Shotgun student rideshare illustration"
+              accessible={false}
+              importantForAccessibility="no"
+              resizeMode="cover"
+              source={require('../../shotgun-login/login-reference.png')}
+              style={styles.referenceArt}
+            />
+          </View>
+
+          <View style={styles.form}>
+            <Text style={styles.formTitle}>Sign in to ride.</Text>
+            <Text style={styles.formSubtitle}>Use your university email to continue.</Text>
+
+            <Text style={styles.label}>UNIVERSITY EMAIL</Text>
+            <TextInput
+              accessibilityLabel="University email"
+              autoCapitalize="none"
+              autoComplete="email"
+              editable={!submittingAction}
+              keyboardType="email-address"
+              onChangeText={setEmail}
+              onSubmitEditing={requestMagicLink}
+              placeholder="you@university.edu"
+              placeholderTextColor={colors.textMuted}
+              returnKeyType="send"
+              style={styles.input}
+              value={email}
+            />
+
+            <Pressable
+              accessibilityLabel="Continue with school email"
+              accessibilityRole="button"
+              accessibilityState={{ disabled: submittingAction !== null, busy: magicLinkSubmitting }}
+              disabled={submittingAction !== null}
+              onPress={requestMagicLink}
+              style={({ pressed }) => [
+                styles.primaryButton,
+                (pressed || submittingAction !== null) && styles.buttonMuted,
+              ]}
+            >
+              {magicLinkSubmitting ? (
+                <ActivityIndicator color={semanticColors.action.accentForeground} />
+              ) : (
+                <Text style={styles.primaryButtonText}>Continue</Text>
+              )}
+            </Pressable>
+
             {__DEV__ ? (
-              <Button disabled={submittingAction !== null && submittingAction !== 'demo'} loading={submittingAction === 'demo'} onPress={continueAsMayaDemo} variant="secondary">
-                Continue as Maya (demo)
-              </Button>
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ disabled: submittingAction !== null, busy: demoSubmitting }}
+                disabled={submittingAction !== null}
+                onPress={continueAsMayaDemo}
+                style={({ pressed }) => [styles.demoButton, pressed && styles.buttonMuted]}
+              >
+                {demoSubmitting ? (
+                  <ActivityIndicator color={semanticColors.action.secondaryForeground} />
+                ) : (
+                  <Text style={styles.demoButtonText}>Continue as Maya (demo)</Text>
+                )}
+              </Pressable>
             ) : null}
+
             {statusMessage ? (
               <Text
                 accessibilityLiveRegion="polite"
                 accessibilityRole={statusTone === 'error' ? 'alert' : 'text'}
-                style={{
-                  color: statusTone === 'error' ? semanticColors.status.dangerForeground : colors.text,
-                  fontSize: 14,
-                  lineHeight: 20,
-                }}
+                style={[styles.statusMessage, statusTone === 'error' && styles.errorMessage]}
               >
                 {statusMessage}
               </Text>
             ) : null}
+
             {__DEV__ ? (
-              <Text style={{ color: colors.textMuted, fontSize: 13, lineHeight: 18 }}>
+              <Text style={styles.demoNote}>
                 Demo sign-in uses the fictional hosted account documented in the auth setup and creates a real Supabase session.
               </Text>
             ) : null}
           </View>
-        </Card>
-      </View>
-    </Screen>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
+
+const styles = StyleSheet.create({
+  screen: {
+    backgroundColor: colors.steel,
+    flex: 1,
+  },
+  scrollContent: {
+    alignItems: 'center',
+    flexGrow: 1,
+    justifyContent: 'flex-start',
+    paddingBottom: spacing[4],
+  },
+  phone: {
+    backgroundColor: colors.steel,
+    maxWidth: 492,
+    overflow: 'hidden',
+    width: '100%',
+  },
+  hero: {
+    backgroundColor: colors.steel,
+    height: 390,
+    overflow: 'hidden',
+    position: 'relative',
+  },
+  referenceArt: {
+    aspectRatio: 492 / 909,
+    left: '-5%',
+    position: 'absolute',
+    top: -105,
+    width: '110%',
+  },
+  form: {
+    backgroundColor: colors.steel,
+    gap: spacing[2],
+    paddingBottom: spacing[5],
+    paddingHorizontal: spacing[8],
+    paddingTop: spacing[4],
+  },
+  formTitle: {
+    color: colors.white,
+    fontSize: 30,
+    fontWeight: typography.fontWeight.heavy,
+    letterSpacing: -0.8,
+    lineHeight: 36,
+  },
+  formSubtitle: {
+    color: colors.white,
+    fontSize: typography.fontSize.md,
+    lineHeight: 23,
+    marginBottom: spacing[2],
+  },
+  label: {
+    color: colors.white,
+    fontSize: typography.fontSize.xs,
+    fontWeight: typography.fontWeight.heavy,
+    letterSpacing: 1.4,
+    lineHeight: 16,
+  },
+  input: {
+    backgroundColor: colors.white,
+    borderRadius: radii.md,
+    color: colors.ink,
+    fontSize: typography.fontSize.md,
+    minHeight: 56,
+    paddingHorizontal: spacing[4],
+  },
+  primaryButton: {
+    alignItems: 'center',
+    backgroundColor: semanticColors.action.accentBackground,
+    borderRadius: radii.md,
+    justifyContent: 'center',
+    marginTop: spacing[2],
+    minHeight: 58,
+  },
+  primaryButtonText: {
+    color: semanticColors.action.accentForeground,
+    fontSize: 19,
+    fontWeight: typography.fontWeight.heavy,
+  },
+  demoButton: {
+    alignItems: 'center',
+    backgroundColor: semanticColors.action.secondaryBackground,
+    borderColor: semanticColors.action.secondaryBorder,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    justifyContent: 'center',
+    minHeight: 52,
+  },
+  demoButtonText: {
+    color: semanticColors.action.secondaryForeground,
+    fontSize: typography.fontSize.md,
+    fontWeight: typography.fontWeight.bold,
+  },
+  buttonMuted: {
+    opacity: 0.58,
+  },
+  statusMessage: {
+    color: colors.white,
+    fontSize: typography.fontSize.sm,
+    lineHeight: 20,
+    marginTop: spacing[1],
+  },
+  errorMessage: {
+    backgroundColor: semanticColors.status.dangerBackground,
+    borderRadius: radii.sm,
+    color: semanticColors.status.dangerForeground,
+    padding: spacing[3],
+  },
+  demoNote: {
+    color: colors.white,
+    fontSize: typography.fontSize.xs,
+    lineHeight: 18,
+    marginTop: spacing[1],
+  },
+});

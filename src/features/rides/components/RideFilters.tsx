@@ -30,28 +30,11 @@ export function RideFilters({ value, errors, disabled = false, applied, onChange
     <View accessibilityLabel="Ride filters" style={[styles.card, disabled && styles.cardDisabled]}>
       <View style={styles.header}>
         <View style={styles.headerCopy}>
-          <Text style={styles.kicker}>FIND A RIDE</Text>
-          <Text style={styles.title}>Where are you headed?</Text>
-          <Text style={styles.subtitle}>Filter by destination, timing, and what fits your budget.</Text>
+          <Text style={styles.kicker}>MORE FILTERS</Text>
+          <Text style={styles.title}>Refine your search</Text>
+          <Text style={styles.subtitle}>Add timing, budget, or seat availability preferences.</Text>
         </View>
         {applied ? <Text style={styles.appliedBadge}>Applied</Text> : null}
-      </View>
-
-      <View style={styles.field}>
-        <Text style={styles.label}>Destination</Text>
-        <TextInput
-          accessibilityLabel="Destination search"
-          autoCapitalize="words"
-          autoCorrect={false}
-          editable={!disabled}
-          onChangeText={(nextValue) => update("destinationQuery", nextValue)}
-          placeholder="SFO, downtown SLO, or another place"
-          placeholderTextColor={colors.textMuted}
-          returnKeyType="search"
-          style={[styles.input, disabled && styles.inputDisabled]}
-          value={value.destinationQuery}
-        />
-        <FieldError message={errors?.destinationQuery} />
       </View>
 
       <View style={styles.field}>
@@ -164,8 +147,8 @@ const styles = StyleSheet.create({
   prefix: { color: colors.textMuted, fontSize: typography.fontSize.md, fontWeight: typography.fontWeight.bold },
   prefixTextInput: { color: colors.ink, flex: 1, fontSize: typography.fontSize.md, minHeight: 46, paddingHorizontal: spacing[2], paddingVertical: spacing[3] },
   actions: { flexDirection: "row", gap: spacing[3], marginTop: spacing[1] },
-  applyButton: { alignItems: "center", backgroundColor: semanticColors.action.primaryBackground, borderRadius: componentTokensButtonRadius(), flex: 1, justifyContent: "center", minHeight: 48, paddingHorizontal: spacing[4] },
-  applyLabel: { color: semanticColors.action.primaryForeground, fontSize: typography.fontSize.md, fontWeight: typography.fontWeight.bold },
+  applyButton: { alignItems: "center", backgroundColor: semanticColors.action.secondaryBackground, borderColor: semanticColors.action.secondaryBorder, borderRadius: componentTokensButtonRadius(), borderWidth: 1, flex: 1, justifyContent: "center", minHeight: 48, paddingHorizontal: spacing[4] },
+  applyLabel: { color: semanticColors.action.secondaryForeground, fontSize: typography.fontSize.md, fontWeight: typography.fontWeight.bold },
   clearButton: { alignItems: "center", backgroundColor: semanticColors.action.secondaryBackground, borderColor: semanticColors.action.secondaryBorder, borderRadius: radii.md, borderWidth: 1, justifyContent: "center", minHeight: 48, minWidth: 82, paddingHorizontal: spacing[4] },
   clearLabel: { color: semanticColors.action.secondaryForeground, fontSize: typography.fontSize.md, fontWeight: typography.fontWeight.bold },
   buttonMuted: { opacity: 0.55 },
