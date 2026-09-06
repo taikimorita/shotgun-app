@@ -8,7 +8,7 @@ Keep entries short. A decision is useful only if it prevents the team from reope
 2. Is the first campus Cal Poly SLO, and what exact student email domain(s) are valid?
 3. Does anyone have permission to register an app in the school's Microsoft Entra tenant? If not, approve school-domain magic-link auth for the demo.
 4. Is “upload Poly ID” a judging requirement, or is verified school email sufficient? The recommendation is not to collect ID images in the MVP.
-5. Partially resolved in D-013: use live place search, directions, and map preview, but the provider, key ownership, and quota are still unanswered.
+5. Resolved in D-013 and D-014: use Geoapify for live place search, directions, and map preview; Owner E owns server-side secret handling and Owner C keeps the typed fallback boundary.
 6. Is the driver offering seats in their own car? The current model assumes yes; “rider determines available seats” appears to mean the ride creator/driver.
 7. Resolved in D-011: one booking request represents exactly one seat for MVP.
 8. Resolved in D-011: prices are per-seat contributions represented as integer cents and displayed as dollars and cents.
@@ -91,6 +91,16 @@ Status: accepted
 Decision: Use a live maps provider for place search, directions, and an interactive route preview. Continuous driver tracking and background location remain out of scope. Keep the deterministic fixture/static fallback required by the demo plan.
 Reason: The team wants a real map experience while preserving the smallest reliable hackathon flow.
 Consequences: Owner C must use the typed `MapsService` boundary. Provider choice, key ownership, quota, client-versus-server key restrictions, and approved dependency must be resolved before live-map implementation.
+
+### D-014 — Geoapify for MVP maps
+
+Date: 2026-09-05
+Owner: team lead
+Status: accepted
+
+Decision: Use Geoapify for MVP place search, directions, and route preview. Keep the Geoapify secret in Supabase secrets or server-side runtime controlled by Owner E; never expose it through `EXPO_PUBLIC_*` values or the client bundle. Owner C consumes the provider only through the typed, provider-neutral `MapsService` boundary and keeps the deterministic mock/static fallback. Continuous, live-driver tracking remains out of scope.
+Reason: Geoapify satisfies the live-map requirement while keeping secrets off-device and preserving a deterministic demo fallback.
+Consequences: Owner E owns backend or Edge Function integration plus secret wiring. Owner C must not import Geoapify SDKs or endpoints directly and should depend only on `MapsService`, `Place`, and `RouteSummary`.
 
 ## Decision entry template
 
