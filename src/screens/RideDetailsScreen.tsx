@@ -1,11 +1,16 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BookingStatusPill } from "../components/BookingStatusPill";
 import { currentUser, rides } from "../data/fixtures";
+import { RideRouteMap } from "../features/rides/components/RideRouteMap";
+import { fixtureRideSeeds } from "../features/rides/fixtures";
+import { createMockMapsService } from "../features/rides/mockMapsService";
+import { createSupabaseMapsService } from "../features/rides/supabaseMapsService";
 import { useBookings } from "../hooks/useBookings";
+import { withRouteFallback } from "../lib/maps";
 import { mockBookingService } from "../services/mockBookingService";
 import { colors, componentTokens, radii, semanticColors, spacing, typography } from "../theme/tokens";
 
@@ -18,6 +23,9 @@ export function RideDetailsScreen() {
   const params = useLocalSearchParams<{ rideId?: string | string[] }>();
   const rideId = Array.isArray(params.rideId) ? params.rideId[0] : params.rideId;
   const ride = rides.find((item) => item.id === rideId);
+  const routeRide = fixtureRideSeeds.find((item) => item.id === rideId);
+  const routePlaces = useMemo(() => routeRide ? [routeRide.origin, ...routeRide.stops, routeRide.destination] : [], [routeRide]);
+  const mapsService = useMemo(() => withRouteFallback(createSupabaseMapsService(), createMockMapsService({ delayMs: 120 })), []);
   const { riderBookings } = useBookings();
   const booking = ride ? riderBookings.find((item) => item.rideId === ride.id) : undefined;
   const [saving, setSaving] = useState(false);
@@ -69,16 +77,14 @@ export function RideDetailsScreen() {
           <Text style={styles.time}>{ride.departureTime}</Text>
         </View>
 
+        {routePlaces.length >= 2 ? <RideRouteMap places={routePlaces} service={mapsService} /> : null}
+
         <View style={styles.routeCard}>
-          <View style={styles.routeRail}>
-            <View style={styles.originDot} />
-            <View style={styles.routeLine} />
-            <View style={styles.destinationDot} />
-          </View>
-          <View style={styles.routeLabels}>
-            <Text style={styles.place}>{ride.origin}</Text>
-            <Text style={styles.place}>{ride.destination}</Text>
-          </View>
+          {routePlaces.map((place, index) => {
+            const isOrigin = index === 0;
+            const isDestination = index === routePlaces.length - 1;
+            return <View key={place.id} style={styles.routeRow}><View style={[styles.routeDot, isOrigin && styles.originDot, isDestination && styles.destinationDot]} /><View style={styles.routeCopy}><Text style={styles.routeKind}>{isOrigin ? "ORIGIN" : isDestination ? "DESTINATION" : "SUGGESTED STOP"}</Text><Text style={styles.place}>{place.label}</Text></View></View>;
+          })}
         </View>
 
         <View style={styles.card}>
@@ -146,12 +152,13 @@ const styles = StyleSheet.create({
   kicker: { color: colors.steel, fontSize: typography.fontSize.xs, fontWeight: typography.fontWeight.bold, letterSpacing: typography.letterSpacing.label },
   time: { color: colors.ink, fontSize: typography.fontSize["2xl"], fontWeight: typography.fontWeight.heavy, marginTop: spacing[1] },
   title: { color: colors.ink, fontSize: typography.fontSize["2xl"], fontWeight: typography.fontWeight.heavy },
-  routeCard: { backgroundColor: semanticColors.app.surface, borderColor: colors.border, borderRadius: componentTokens.card.radius, borderWidth: 1, flexDirection: "row", gap: spacing[4], padding: componentTokens.card.padding },
-  routeRail: { alignItems: "center", paddingVertical: spacing[1], width: 14 },
-  originDot: { backgroundColor: colors.steel, borderRadius: radii.pill, height: 12, width: 12 },
-  routeLine: { backgroundColor: colors.borderStrong, flex: 1, minHeight: 40, width: 2 },
-  destinationDot: { backgroundColor: colors.peach, borderRadius: radii.pill, height: 12, width: 12 },
-  routeLabels: { flex: 1, justifyContent: "space-between", minHeight: 72 },
+  routeCard: { backgroundColor: semanticColors.app.surface, borderColor: colors.border, borderRadius: componentTokens.card.radius, borderWidth: 1, gap: spacing[3], padding: componentTokens.card.padding },
+  routeRow: { alignItems: "center", flexDirection: "row", gap: spacing[3] },
+  routeDot: { backgroundColor: colors.steel, borderRadius: radii.pill, height: 8, width: 8 },
+  originDot: { backgroundColor: colors.peach, height: 12, width: 12 },
+  destinationDot: { backgroundColor: colors.navy, height: 12, width: 12 },
+  routeCopy: { flex: 1, gap: spacing[1] },
+  routeKind: { color: colors.textMuted, fontSize: typography.fontSize.xs, fontWeight: typography.fontWeight.bold, letterSpacing: typography.letterSpacing.label },
   place: { color: colors.ink, fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.bold },
   card: { backgroundColor: semanticColors.app.surface, borderColor: colors.border, borderRadius: componentTokens.card.radius, borderWidth: 1, gap: spacing[3], padding: componentTokens.card.padding },
   section: { color: colors.ink, fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.heavy },

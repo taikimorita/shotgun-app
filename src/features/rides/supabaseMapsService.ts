@@ -15,6 +15,12 @@ function isPlace(value: unknown): value is Place {
   return typeof place.id === "string" && typeof place.label === "string" && isFiniteNumber(place.lat) && isFiniteNumber(place.lng);
 }
 
+function isRoutePoint(value: unknown): value is { lat: number; lng: number } {
+  if (!value || typeof value !== "object") return false;
+  const point = value as { lat?: unknown; lng?: unknown };
+  return isFiniteNumber(point.lat) && isFiniteNumber(point.lng);
+}
+
 function mapsError(error: unknown) {
   if (error && typeof error === "object" && "message" in error && typeof error.message === "string") return new Error(error.message);
   return new Error("Live maps are temporarily unavailable.");
@@ -41,6 +47,7 @@ export function createSupabaseMapsService(
       if (error) throw mapsError(error);
       const route = (data as Partial<RouteResponse> | null)?.route;
       if (!route || !isFiniteNumber(route.distanceMeters) || !isFiniteNumber(route.durationSeconds)) throw mapsError(null);
+      if (route.path != null && (!Array.isArray(route.path) || !route.path.every(isRoutePoint))) throw mapsError(null);
       return route;
     },
   };

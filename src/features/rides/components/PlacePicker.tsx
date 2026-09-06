@@ -48,7 +48,9 @@ export function PlacePicker({
   const query = draftQuery?.valueId === valueId ? draftQuery.text : value?.label ?? "";
   const selectedLabel = normalizeMapsQuery(value?.label ?? "");
   const normalizedQuery = normalizeMapsQuery(query);
-  const shouldSearch = Boolean(normalizedQuery && (!value || normalizedQuery !== selectedLabel));
+  const isEditing = Boolean(normalizedQuery && (!value || normalizedQuery !== selectedLabel));
+  const queryTooShort = isEditing && normalizedQuery.length < 2;
+  const shouldSearch = isEditing && !queryTooShort;
   const currentResult = shouldSearch && searchResult?.query === normalizedQuery ? searchResult : null;
   const state: SearchState = shouldSearch ? currentResult?.state ?? "searching" : "idle";
   const results = currentResult?.results ?? [];
@@ -119,8 +121,12 @@ export function PlacePicker({
   }
 
   const statusMessage =
-    state === "searching"
+    queryTooShort
+      ? "Enter at least 2 characters to search."
+      : state === "searching"
       ? "Searching places..."
+      : state === "results"
+        ? `${results.length} location${results.length === 1 ? "" : "s"} found.`
       : state === "no-results"
         ? "No matching places found."
         : state === "error"
@@ -128,9 +134,9 @@ export function PlacePicker({
           : value
             ? `Selected ${value.label}.`
             : helperText ?? "Search for a place to continue.";
-  const visibleResults = state === "error" || state === "no-results" ? fallbackPlaces : results;
+  const visibleResults = state === "error" ? fallbackPlaces : results;
   const resultHeader =
-    state === "error" ? "Demo locations" : state === "results" ? "Matches" : state === "no-results" ? "Try a demo location" : "";
+    state === "error" ? "Demo locations" : state === "results" ? "Matches" : "";
 
   return (
     <View style={styles.container}>

@@ -112,6 +112,16 @@ Decision: Render the interactive Find map with `react-native-maps` using Apple M
 Reason: The judge-facing Find flow now needs a tappable map containing the selected pickup and discoverable ride destinations. Native Apple Maps provides interaction without putting the Geoapify secret in the Expo bundle.
 Consequences: The map consumes only cached ride coordinates and typed location output. A searched pickup works without location permission, denial is non-blocking, and web/unsupported rendering keeps a useful static preview.
 
+### D-016 — Geoapify autocomplete access during mocked auth
+
+Date: 2026-09-06
+Owner: team lead
+Status: accepted
+
+Decision: Keep `geoapify-maps` behind Supabase gateway JWT verification, but accept both the publishable anonymous client role and authenticated user roles while the MVP uses mocked student auth. Keep the Geoapify provider key exclusively in Supabase secrets.
+Reason: Requiring an authenticated Supabase user made every autocomplete call from the mocked-auth demo fail, so the UI silently returned fixture locations instead of live results.
+Consequences: The proxy is reachable by holders of the public client key and consumes the project's Geoapify quota. Input limits, result limits, and provider timeouts bound each call; production auth and rate limits must replace anonymous access before launch.
+
 ## Decision entry template
 
 ```md
