@@ -14,8 +14,10 @@ import { RideCard } from "../features/rides/components/RideCard";
 import { RideFilters } from "../features/rides/components/RideFilters";
 import { calPoly, fixtureNowIso, sfo } from "../features/rides/fixtures";
 import { createMockMapsService } from "../features/rides/mockMapsService";
+import { createSupabaseMapsService } from "../features/rides/supabaseMapsService";
 import { fixtureRidesService } from "../features/rides/service";
-import { MapsService } from "../lib/maps";
+import { MapsService, withMapsFallback } from "../lib/maps";
+import { expoLocationService, LocationService } from "../lib/location";
 import { Place, Ride, RideFilters as RideFilterQuery, RidesService } from "../features/rides/types";
 import { currentUser } from "../data/fixtures";
 import { colors, radii, semanticColors, spacing, typography } from "../theme/tokens";
@@ -23,6 +25,7 @@ import { colors, radii, semanticColors, spacing, typography } from "../theme/tok
 type DiscoveryScreenProps = {
   ridesService?: Pick<RidesService, "list">;
   mapsService?: MapsService;
+  locationService?: LocationService;
   now?: Date | string;
 };
 
@@ -39,9 +42,13 @@ function hasFilters(value: DiscoveryFilterValues) {
   return Object.values(value).some((entry) => entry.trim().length > 0);
 }
 
-export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsService: mapsServiceProp, now = fixtureNowIso }: DiscoveryScreenProps) {
+export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsService: mapsServiceProp, locationService = expoLocationService, now = fixtureNowIso }: DiscoveryScreenProps) {
   const router = useRouter();
-  const mapsService = useMemo(() => mapsServiceProp ?? createMockMapsService({ delayMs: 120 }), [mapsServiceProp]);
+  const mapsService = useMemo(() => {
+    if (mapsServiceProp) return mapsServiceProp;
+    const fallback = createMockMapsService({ delayMs: 120 });
+    return withMapsFallback(createSupabaseMapsService(), fallback);
+  }, [mapsServiceProp]);
   const [draft, setDraft] = useState<DiscoveryFilterValues>({ ...emptyDiscoveryFilters });
   const [applied, setApplied] = useState<DiscoveryFilterValues>({ ...emptyDiscoveryFilters });
   const [query, setQuery] = useState<RideFilterQuery>({});
@@ -53,6 +60,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
   const [loadError, setLoadError] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
   const [isApplying, setIsApplying] = useState(false);
+  const [locationState, setLocationState] = useState<{ status: "idle" | "loading" | "error"; error: string }>({ status: "idle", error: "" });
 
   useEffect(() => {
     let active = true;
@@ -120,8 +128,24 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
 
   function useDemoPreset() {
     setPickup({ ...calPoly });
+    setLocationState({ status: "idle", error: "" });
     setDestination({ ...sfo });
     apply(demoFilters);
+  }
+
+  function changePickup(place: Place | null) {
+    setPickup(place);
+    setLocationState({ status: "idle", error: "" });
+  }
+
+  async function useCurrentLocation() {
+    setLocationState({ status: "loading", error: "" });
+    try {
+      setPickup(await locationService.getCurrentPlace());
+      setLocationState({ status: "idle", error: "" });
+    } catch (error) {
+      setLocationState({ status: "error", error: error instanceof Error ? error.message : "Couldn’t get your current location." });
+    }
   }
 
   const filtered = hasFilters(applied);
@@ -132,11 +156,15 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
         <DiscoveryMapHeader
           destination={destination}
           disabled={isApplying}
+          locationError={locationState.error}
+          locationStatus={locationState.status}
           mapsService={mapsService}
           onDestinationChange={setDestination}
-          onPickupChange={setPickup}
+          onPickupChange={changePickup}
+          onUseCurrentLocation={useCurrentLocation}
           onViewRides={viewRides}
           pickup={pickup}
+          rides={rides}
           viewRidesDisabled={isApplying || !destination}
           viewRidesLoading={isApplying}
         />

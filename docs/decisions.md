@@ -102,6 +102,16 @@ Decision: Use Geoapify for MVP place search, directions, and route preview. Keep
 Reason: Geoapify satisfies the live-map requirement while keeping secrets off-device and preserving a deterministic demo fallback.
 Consequences: Owner E owns backend or Edge Function integration plus secret wiring. Owner C must not import Geoapify SDKs or endpoints directly and should depend only on `MapsService`, `Place`, and `RouteSummary`.
 
+### D-015 — Interactive Find map and foreground location
+
+Date: 2026-09-06
+Owner: team lead
+Status: accepted
+
+Decision: Render the interactive Find map with `react-native-maps` using Apple Maps on the iPhone demo target. Geoapify remains the server-side provider for place search and routing. Use `expo-location` only after an explicit “Use my location” action and request foreground access only; never collect or track location in the background.
+Reason: The judge-facing Find flow now needs a tappable map containing the selected pickup and discoverable ride destinations. Native Apple Maps provides interaction without putting the Geoapify secret in the Expo bundle.
+Consequences: The map consumes only cached ride coordinates and typed location output. A searched pickup works without location permission, denial is non-blocking, and web/unsupported rendering keeps a useful static preview.
+
 ## Decision entry template
 
 ```md

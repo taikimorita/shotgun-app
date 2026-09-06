@@ -399,6 +399,9 @@ deno_version = 2
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+[functions.geoapify-maps]
+verify_jwt = true
+
 [analytics]
 enabled = true
 port = 54327
