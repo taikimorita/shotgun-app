@@ -122,6 +122,16 @@ Decision: Keep `geoapify-maps` behind Supabase gateway JWT verification, but acc
 Reason: Requiring an authenticated Supabase user made every autocomplete call from the mocked-auth demo fail, so the UI silently returned fixture locations instead of live results.
 Consequences: The proxy is reachable by holders of the public client key and consumes the project's Geoapify quota. Input limits, result limits, and provider timeouts bound each call; production auth and rate limits must replace anonymous access before launch.
 
+### D-017 — Find matching uses destination proximity
+
+Date: 2026-09-06
+Owner: team lead
+Status: accepted
+
+Decision: After a rider picks a Find destination from `MapsService`, rank and keep rides whose destination or stop is within 80 km of that place. Do not match on Geoapify’s full address string. Date, price, and seat filters still apply.
+Reason: Live autocomplete labels rarely equal stored ride labels, so substring search hid valid SFO/LA rides. Distance is the useful judge-facing sort.
+Consequences: The Find list updates as soon as a destination place is selected. Label substring search remains available only when a destination query is sent through the existing filter path (for example the demo preset).
+
 ## Decision entry template
 
 ```md
