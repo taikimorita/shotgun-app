@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Href, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import {
@@ -16,6 +17,7 @@ import { createMockMapsService } from "../features/rides/mockMapsService";
 import { fixtureRidesService } from "../features/rides/service";
 import { MapsService } from "../lib/maps";
 import { Place, Ride, RideFilters as RideFilterQuery, RidesService } from "../features/rides/types";
+import { currentUser } from "../data/fixtures";
 import { colors, radii, semanticColors, spacing, typography } from "../theme/tokens";
 
 type DiscoveryScreenProps = {
@@ -38,6 +40,7 @@ function hasFilters(value: DiscoveryFilterValues) {
 }
 
 export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsService: mapsServiceProp, now = fixtureNowIso }: DiscoveryScreenProps) {
+  const router = useRouter();
   const mapsService = useMemo(() => mapsServiceProp ?? createMockMapsService({ delayMs: 120 }), [mapsServiceProp]);
   const [draft, setDraft] = useState<DiscoveryFilterValues>({ ...emptyDiscoveryFilters });
   const [applied, setApplied] = useState<DiscoveryFilterValues>({ ...emptyDiscoveryFilters });
@@ -178,7 +181,12 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
           </View>
         ) : (
           rides.map((ride) => (
-            <RideCard key={ride.id} ride={ride} requestable={isRideRequestable(ride, now)} />
+            <RideCard
+              key={ride.id}
+              onPress={() => router.push(`/rides/${ride.id}` as Href)}
+              ride={ride}
+              requestable={isRideRequestable(ride, now) && ride.driver.id !== currentUser.id}
+            />
           ))
         )}
 
