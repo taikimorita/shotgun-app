@@ -16,7 +16,7 @@ import { calPoly, fixtureNowIso, sfo } from "../features/rides/fixtures";
 import { createMockMapsService } from "../features/rides/mockMapsService";
 import { createSupabaseMapsService } from "../features/rides/supabaseMapsService";
 import { fixtureRidesService } from "../features/rides/service";
-import { MapsService, withMapsFallback } from "../lib/maps";
+import { MapsService, withRouteFallback } from "../lib/maps";
 import { expoLocationService, LocationService } from "../lib/location";
 import { Place, Ride, RideFilters as RideFilterQuery, RidesService } from "../features/rides/types";
 import { currentUser } from "../data/fixtures";
@@ -46,8 +46,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
   const router = useRouter();
   const mapsService = useMemo(() => {
     if (mapsServiceProp) return mapsServiceProp;
-    const fallback = createMockMapsService({ delayMs: 120 });
-    return withMapsFallback(createSupabaseMapsService(), fallback);
+    return withRouteFallback(createSupabaseMapsService(), createMockMapsService({ delayMs: 120 }));
   }, [mapsServiceProp]);
   const [draft, setDraft] = useState<DiscoveryFilterValues>({ ...emptyDiscoveryFilters });
   const [applied, setApplied] = useState<DiscoveryFilterValues>({ ...emptyDiscoveryFilters });

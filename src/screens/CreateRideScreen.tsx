@@ -11,10 +11,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { RideForm } from "../features/rides/components/RideForm";
 import { createMockMapsService } from "../features/rides/mockMapsService";
+import { createSupabaseMapsService } from "../features/rides/supabaseMapsService";
 import { fixtureRidesService } from "../features/rides/service";
 import { DriverSummary, Ride, VehicleSummary } from "../features/rides/types";
 import { fixtureNowIso, mayaDriver } from "../features/rides/fixtures";
 import { colors, componentTokens, radii, semanticColors, spacing, typography } from "../theme/tokens";
+import { withRouteFallback } from "../lib/maps";
 
 type CreateRideScreenProps = {
   onCancel?: () => void;
@@ -192,7 +194,10 @@ function PublishedConfirmation({ ride, onCreateAnother, onCancel }: { ride: Ride
 }
 
 export function CreateRideScreen({ onCancel, onCreateAnother, onPublished }: CreateRideScreenProps) {
-  const mapsService = useMemo(() => createMockMapsService({ delayMs: 120 }), []);
+  const mapsService = useMemo(
+    () => withRouteFallback(createSupabaseMapsService(), createMockMapsService({ delayMs: 120 })),
+    [],
+  );
   const [dependencyAttempt, setDependencyAttempt] = useState(0);
   const [dependency, setDependency] = useState<DependencyState>({ status: "loading" });
   const [publishedRide, setPublishedRide] = useState<Ride | null>(null);

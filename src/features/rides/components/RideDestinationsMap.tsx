@@ -40,11 +40,14 @@ export function RideDestinationsMap({ origin, rides }: Props) {
           </Marker>
         ) : null}
         {destinations.map((place) => (
-          <Marker key={place.id} coordinate={{ latitude: place.lat, longitude: place.lng }} description="Available ride destination" title={place.label} tracksViewChanges={false}>
-            <View style={styles.markerBadge}>
-              <Image accessibilityLabel={`Available rides to ${place.label}`} source={require("../../../../Images/GradCapBlue.png")} style={styles.markerImage} />
-            </View>
-          </Marker>
+          <Marker
+            key={place.id}
+            accessibilityLabel={`Available rides to ${place.label}`}
+            coordinate={{ latitude: place.lat, longitude: place.lng }}
+            description="Available ride destination"
+            pinColor={colors.steel}
+            title={place.label}
+          />
         ))}
       </MapView>
     );

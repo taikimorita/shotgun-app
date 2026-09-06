@@ -132,7 +132,8 @@ export function createMockMapsService(options: MockMapsServiceOptions = {}): Map
       }
 
       const exactRoute = demoRoutes.get(createRouteKey(stops));
-      return exactRoute ? cloneRouteSummary(exactRoute) : estimateRoute(stops);
+      const summary = exactRoute ? cloneRouteSummary(exactRoute) : estimateRoute(stops);
+      return { ...summary, path: stops.map(({ lat, lng }) => ({ lat, lng })) };
     },
   };
 }

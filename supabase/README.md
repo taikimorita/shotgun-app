@@ -36,7 +36,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=<anon key from supabase start>
 
 ### Geoapify maps proxy
 
-Find place search calls the authenticated `geoapify-maps` Edge Function. Keep the provider key server-side:
+Find place search calls the JWT-protected `geoapify-maps` Edge Function. It accepts the app's publishable anonymous client during the mocked-auth demo and authenticated user tokens once Supabase Auth is active. Keep the provider key server-side:
 
 ```sh
 npx supabase secrets set GEOAPIFY_API_KEY=<key>

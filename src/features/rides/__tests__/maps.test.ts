@@ -1,7 +1,7 @@
 import { createMockMapsService } from "../mockMapsService";
 import { createSupabaseMapsService } from "../supabaseMapsService";
 import { calPoly, downtownSlo, sfo } from "../fixtures";
-import { withMapsFallback } from "../../../lib/maps";
+import { withMapsFallback, withRouteFallback } from "../../../lib/maps";
 import { regionForPlaces, uniqueRideDestinations } from "../mapPresentation";
 import type { Ride } from "../types";
 
@@ -67,6 +67,7 @@ async function run() {
   const fallbackRoute = await service.getRoute([calPoly, sfo]);
   assertOk(fallbackRoute.distanceMeters > 0);
   assertOk(fallbackRoute.durationSeconds > 0);
+  assertDeepEqual(fallbackRoute.path, [{ lat: calPoly.lat, lng: calPoly.lng }, { lat: sfo.lat, lng: sfo.lng }]);
 
   const searchFailure = createMockMapsService({ delayMs: 0, failureMode: "search" });
   await assertRejects(() => searchFailure.searchPlaces("cal poly"));
@@ -82,12 +83,16 @@ async function run() {
   assertDeepEqual((await resilient.searchPlaces("sfo")).map((place) => place.id), ["place-sfo"]);
   assertEqual((await resilient.getRoute([calPoly, sfo])).distanceMeters, 368000);
 
+  const routeResilient = withRouteFallback(allFailure, service);
+  await assertRejects(() => routeResilient.searchPlaces("sfo"));
+  assertEqual((await routeResilient.getRoute([calPoly, sfo])).distanceMeters, 368000);
+
   const calls: unknown[] = [];
   const live = createSupabaseMapsService(async (name, options) => {
     calls.push({ name, ...options });
     return options.body.operation === "search"
       ? { data: { places: [sfo] }, error: null }
-      : { data: { route: { distanceMeters: 368123, durationSeconds: 13845 } }, error: null };
+      : { data: { route: { distanceMeters: 368123, durationSeconds: 13845, path: [{ lat: calPoly.lat, lng: calPoly.lng }, { lat: sfo.lat, lng: sfo.lng }] } }, error: null };
   });
   assertDeepEqual(await live.searchPlaces("SFO"), [sfo]);
   assertEqual((await live.getRoute([calPoly, sfo])).distanceMeters, 368123);

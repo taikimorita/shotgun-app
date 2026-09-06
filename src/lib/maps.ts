@@ -24,6 +24,19 @@ export function withMapsFallback(primary: MapsService, fallback: MapsService): M
   };
 }
 
+export function withRouteFallback(primary: MapsService, fallback: MapsService): MapsService {
+  return {
+    searchPlaces: (query) => primary.searchPlaces(query),
+    async getRoute(stops) {
+      try {
+        return await primary.getRoute(stops);
+      } catch {
+        return fallback.getRoute(stops);
+      }
+    },
+  };
+}
+
 export type MockMapsFailureMode = "search" | "route" | "all";
 
 export interface MockMapsServiceOptions {
@@ -46,5 +59,5 @@ export function clonePlace(place: Place): Place {
 }
 
 export function cloneRouteSummary(routeSummary: RouteSummary): RouteSummary {
-  return { ...routeSummary };
+  return { ...routeSummary, path: routeSummary.path?.map((point) => ({ ...point })) };
 }

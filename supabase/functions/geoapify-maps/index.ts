@@ -26,12 +26,13 @@ function isPlaceInput(value: unknown): value is PlaceInput {
   return isRecord(value) && isCoordinate(value.lat, -90, 90) && isCoordinate(value.lng, -180, 180);
 }
 
-function isAuthenticated(request: Request) {
+function hasMapsAccess(request: Request) {
   const token = request.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
   if (!token) return false;
   try {
-    const payload = JSON.parse(atob(token.split(".")[1] ?? "")) as unknown;
-    return isRecord(payload) && payload.role === "authenticated" && typeof payload.sub === "string";
+    const encodedPayload = token.split(".")[1]?.replace(/-/g, "+").replace(/_/g, "/") ?? "";
+    const payload = JSON.parse(atob(encodedPayload)) as unknown;
+    return isRecord(payload) && (payload.role === "anon" || payload.role === "authenticated");
   } catch {
     return false;
   }
@@ -81,21 +82,34 @@ async function getRoute(stops: PlaceInput[], apiKey: string) {
     waypoints: stops.map((stop) => `${stop.lat},${stop.lng}`).join("|"),
     mode: "drive",
     units: "metric",
-    format: "json",
+    format: "geojson",
     apiKey,
   }).toString();
   const payload = await fetchGeoapify(url);
-  const route = isRecord(payload) && Array.isArray(payload.results) ? payload.results[0] : null;
-  if (!isRecord(route) || typeof route.distance !== "number" || typeof route.time !== "number") {
+  const feature = isRecord(payload) && Array.isArray(payload.features) ? payload.features[0] : null;
+  const properties = isRecord(feature) && isRecord(feature.properties) ? feature.properties : null;
+  const geometry = isRecord(feature) && isRecord(feature.geometry) ? feature.geometry : null;
+  const lines = geometry && Array.isArray(geometry.coordinates) ? geometry.coordinates : [];
+  const routeLines = lines.map((line) => {
+    if (!Array.isArray(line)) return [];
+    return line.flatMap((point) => {
+      if (!Array.isArray(point) || !isCoordinate(point[0], -180, 180) || !isCoordinate(point[1], -90, 90)) return [];
+      return [{ lat: point[1], lng: point[0] }];
+    });
+  });
+  const pointCount = routeLines.reduce((total, line) => total + line.length, 0);
+  const stride = Math.max(1, Math.ceil(pointCount / 700));
+  const path = routeLines.flatMap((line) => line.filter((_, index) => index % stride === 0 || index === line.length - 1));
+  if (!properties || typeof properties.distance !== "number" || typeof properties.time !== "number" || path.length < 2) {
     throw new Error("Geoapify returned no route");
   }
-  return json({ route: { distanceMeters: Math.round(route.distance), durationSeconds: Math.round(route.time) } });
+  return json({ route: { distanceMeters: Math.round(properties.distance), durationSeconds: Math.round(properties.time), path } });
 }
 
 Deno.serve(async (request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (request.method !== "POST") return json({ error: "Method not allowed" }, 405);
-  if (!isAuthenticated(request)) return json({ error: "Authentication required" }, 401);
+  if (!hasMapsAccess(request)) return json({ error: "Valid Supabase client token required" }, 401);
 
   const apiKey = Deno.env.get("GEOAPIFY_API_KEY");
   if (!apiKey) return json({ error: "Maps service is not configured" }, 503);

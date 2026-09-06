@@ -46,8 +46,8 @@ export const downtownSlo = {
 export const sfo = {
   id: "place-sfo",
   label: "San Francisco International Airport (SFO)",
-  lat: 37.6213,
-  lng: -122.379,
+  lat: 37.6166756,
+  lng: -122.3881253,
 };
 
 export const losAngeles = {
