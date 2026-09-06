@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Shotgun driver details preview</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { align-items: center; background: #eaf3f9; display: flex; justify-content: center; margin: 0; min-height: 100vh; padding: 20px; }
+      .phone { aspect-ratio: 480 / 909; max-width: 480px; position: relative; width: 100%; }
+      img { display: block; height: 100%; width: 100%; }
+      button { background: transparent; border: 0; border-radius: 16px; cursor: pointer; position: absolute; } button:active { opacity: .72; } button:focus-visible { outline: 3px solid #102a43; outline-offset: 3px; }
+      .card { left: 7%; right: 7%; height: 8.6%; } #driver-license { top: 34%; } #student-id { top: 43.4%; } #age { top: 53%; } #photo { top: 62.6%; } #car-information { top: 71.7%; height: 9.3%; } #submit { top: 84.2%; height: 7.4%; left: 7%; right: 7%; }
+      .status { color: #102a43; font: 600 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; min-height: 20px; position: absolute; text-align: center; top: calc(100% + 10px); width: 100%; }
+    </style>
+  </head>
+  <body>
+    <main class="phone"><img alt="Driver details verification" src="driver-reference.png" /><button aria-label="Upload driver license" class="card" id="driver-license"></button><button aria-label="Upload student ID" class="card" id="student-id"></button><button aria-label="Confirm age" class="card" id="age"></button><button aria-label="Upload your photo" class="card" id="photo"></button><button aria-label="Edit car information" class="card" id="car-information"></button><button aria-label="Submit for verification" id="submit"></button><p aria-live="polite" class="status" id="status"></p></main>
+    <script>
+      const labels = { 'driver-license': 'Driver license selected.', 'student-id': 'Student ID selected.', age: 'Age selected.', photo: 'Photo selected.', 'car-information': 'Car information selected.', submit: 'Verification submitted.' };
+      Object.entries(labels).forEach(([id, message]) => document.querySelector(`#${id}`).onclick = () => { document.querySelector('#status').textContent = message; });
+    </script>
+  </body>
+</html>
