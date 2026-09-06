@@ -135,7 +135,7 @@ export function PlacePicker({
   return (
     <View style={styles.container}>
       <Text style={styles.label}>{label}</Text>
-      <View style={styles.inputShell}>
+      <View style={[styles.inputShell, value && styles.inputShellSelected]}>
         <TextInput
           accessibilityLabel={`${label} search`}
           autoCapitalize="words"
@@ -168,25 +168,6 @@ export function PlacePicker({
       >
         {statusMessage}
       </Text>
-
-      {value ? (
-        <View style={styles.selectedCard}>
-          <View style={styles.selectedText}>
-            <Text style={styles.selectedLabel}>Selected</Text>
-            <Text style={styles.selectedValue}>{value.label}</Text>
-            <Text style={styles.selectedMeta}>{coords(value)}</Text>
-          </View>
-          <Pressable
-            accessibilityLabel={`Clear selected ${label.toLowerCase()}`}
-            accessibilityRole="button"
-            disabled={disabled}
-            onPress={clear}
-            style={({ pressed }) => [styles.secondaryAction, (disabled || pressed) && styles.muted]}
-          >
-            <Text style={styles.secondaryActionText}>Clear</Text>
-          </Pressable>
-        </View>
-      ) : null}
 
       {visibleResults.length > 0 ? <Text style={styles.resultsLabel}>{resultHeader}</Text> : null}
       {visibleResults.length > 0 ? (
@@ -255,6 +236,10 @@ const styles = StyleSheet.create({
     paddingLeft: spacing[4],
     paddingRight: spacing[2],
   },
+  inputShellSelected: {
+    backgroundColor: semanticColors.status.successBackground,
+    borderColor: semanticColors.status.successForeground,
+  },
   input: {
     color: colors.ink,
     flex: 1,
@@ -286,50 +271,6 @@ const styles = StyleSheet.create({
   },
   statusError: {
     color: semanticColors.status.dangerForeground,
-  },
-  selectedCard: {
-    alignItems: "center",
-    backgroundColor: semanticColors.status.successBackground,
-    borderRadius: radii.md,
-    flexDirection: "row",
-    gap: spacing[3],
-    padding: spacing[4],
-  },
-  selectedText: {
-    flex: 1,
-    gap: 4,
-  },
-  selectedLabel: {
-    color: semanticColors.status.successForeground,
-    fontSize: typography.fontSize.xs,
-    fontWeight: typography.fontWeight.bold,
-    letterSpacing: typography.letterSpacing.label,
-    textTransform: "uppercase",
-  },
-  selectedValue: {
-    color: colors.ink,
-    fontSize: typography.fontSize.md,
-    fontWeight: typography.fontWeight.bold,
-  },
-  selectedMeta: {
-    color: colors.textMuted,
-    fontSize: typography.fontSize.sm,
-  },
-  secondaryAction: {
-    alignItems: "center",
-    backgroundColor: semanticColors.app.surface,
-    borderColor: semanticColors.app.borderStrong,
-    borderRadius: radii.pill,
-    borderWidth: 1,
-    justifyContent: "center",
-    minHeight: 44,
-    paddingHorizontal: spacing[3],
-    paddingVertical: spacing[2],
-  },
-  secondaryActionText: {
-    color: semanticColors.text.link,
-    fontSize: typography.fontSize.sm,
-    fontWeight: typography.fontWeight.bold,
   },
   resultsLabel: {
     color: colors.textMuted,
