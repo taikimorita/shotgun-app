@@ -2,7 +2,7 @@ import { createMockMapsService } from "../mockMapsService";
 import { createSupabaseMapsService } from "../supabaseMapsService";
 import { calPoly, downtownSlo, sfo } from "../fixtures";
 import { withMapsFallback, withRouteFallback } from "../../../lib/maps";
-import { regionForPlaces, uniqueAvailableRoutePoints } from "../mapPresentation";
+import { regionForPlaces, ridesNearDestination, uniqueRideDestinations } from "../mapPresentation";
 import type { Ride } from "../types";
 
 function fail(message: string): never {
@@ -117,7 +117,15 @@ async function run() {
     { id: "full", stops: [], destination: calPoly, remainingSeats: 0, status: "scheduled" },
     { id: "cancelled", stops: [], destination: calPoly, remainingSeats: 2, status: "cancelled" },
   ] as Ride[];
-  assertDeepEqual(uniqueAvailableRoutePoints(mapRides).map((place) => place.id), [downtownSlo.id, sfo.id]);
+  assertDeepEqual(uniqueRideDestinations(mapRides).map((place) => place.id), [sfo.id, downtownSlo.id]);
+  const geoapifySfo = { ...sfo, id: "geoapify-sfo-terminal", label: "San Francisco International Airport, CA, United States of America" };
+  const proximityRides = [
+    { id: "ride-sfo", destination: sfo, stops: [downtownSlo], departureAt: "2026-09-06T16:00:00.000Z" },
+    { id: "ride-slo", destination: downtownSlo, stops: [], departureAt: "2026-09-06T17:00:00.000Z" },
+    { id: "ride-sb", destination: { id: "sb", label: "Santa Barbara", lat: 34.4208, lng: -119.6982 }, stops: [], departureAt: "2026-09-07T20:00:00.000Z" },
+  ] as Ride[];
+  assertDeepEqual(ridesNearDestination(proximityRides, geoapifySfo).map((ride) => ride.id), ["ride-sfo"]);
+  assertDeepEqual(ridesNearDestination(proximityRides, downtownSlo).map((ride) => ride.id), ["ride-sfo", "ride-slo"]);
   const mapRegion = regionForPlaces([calPoly, sfo]);
   assertOk(mapRegion.latitudeDelta > Math.abs(sfo.lat - calPoly.lat));
   assertOk(mapRegion.longitudeDelta > Math.abs(sfo.lng - calPoly.lng));

@@ -177,7 +177,7 @@ export function PlacePicker({
 
       {visibleResults.length > 0 ? <Text style={styles.resultsLabel}>{resultHeader}</Text> : null}
       {visibleResults.length > 0 ? (
-        <ScrollView keyboardShouldPersistTaps="handled" style={styles.resultsScroll} contentContainerStyle={styles.resultsList}>
+        <ScrollView keyboardShouldPersistTaps="handled" nestedScrollEnabled style={styles.resultsScroll} contentContainerStyle={styles.resultsList}>
           {visibleResults.map((place) => {
             const selected = value?.id === place.id;
 
