@@ -1,4 +1,5 @@
 export const DEFAULT_DISPLAY_TIMEZONE = "America/Los_Angeles" as const;
+export const MAX_RIDE_STOPS = 4;
 
 export type RideStatus = "scheduled" | "in_progress" | "completed" | "cancelled";
 export type PriceSource = "suggested" | "driver_set";

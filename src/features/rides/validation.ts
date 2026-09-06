@@ -1,6 +1,7 @@
 import {
   DEFAULT_DISPLAY_TIMEZONE,
   DriverSummary,
+  MAX_RIDE_STOPS,
   NormalizedRideDraft,
   Place,
   RideDraftErrors,
@@ -10,10 +11,6 @@ import {
   VehicleSummary,
   ValidationResult,
 } from "./types";
-
-function normalizeText(value: string) {
-  return value.trim().replace(/\s+/g, " ").toLowerCase();
-}
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
@@ -278,7 +275,7 @@ function toUtcIso(datePart: string, timePart: string, timeZone: string): string 
 }
 
 function comparePlaces(left: Place, right: Place) {
-  return normalizeText(left.label) === normalizeText(right.label) && left.lat === right.lat && left.lng === right.lng;
+  return left.id === right.id || (Math.abs(left.lat - right.lat) < 0.000001 && Math.abs(left.lng - right.lng) < 0.000001);
 }
 
 export function validateRideDraft(
@@ -325,10 +322,25 @@ export function validateRideDraft(
 
   const stops = Array.isArray(draft.stops) ? draft.stops : [];
   const normalizedStops: Place[] = [];
+  if (stops.length > MAX_RIDE_STOPS) {
+    errors.stops = `A ride can have up to ${MAX_RIDE_STOPS} stops.`;
+  }
   for (const stop of stops) {
+    if (errors.stops) break;
     const validatedStop = validatePlace(stop, "stops");
     if ("error" in validatedStop) {
       errors.stops = validatedStop.error;
+      break;
+    }
+    if (
+      (normalizedOrigin && comparePlaces(validatedStop.value, normalizedOrigin)) ||
+      (normalizedDestination && comparePlaces(validatedStop.value, normalizedDestination))
+    ) {
+      errors.stops = "Stops must differ from the origin and destination.";
+      break;
+    }
+    if (normalizedStops.some((existing) => comparePlaces(existing, validatedStop.value))) {
+      errors.stops = "Each stop can appear only once.";
       break;
     }
     normalizedStops.push(validatedStop.value);

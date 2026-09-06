@@ -58,7 +58,7 @@ export function DiscoveryMapHeader({
           label="Pickup"
           service={mapsService}
           onChange={onPickupChange}
-          placeholder="Search campus, downtown SLO, or another place"
+          placeholder="Search anywhere"
           value={pickup}
         />
         <Pressable
@@ -81,7 +81,7 @@ export function DiscoveryMapHeader({
           label="Destination"
           service={mapsService}
           onChange={onDestinationChange}
-          placeholder="Search SFO, Los Angeles, or another place"
+          placeholder="Search anywhere"
           value={destination}
         />
       </View>

@@ -12,7 +12,7 @@ import {
 import { DiscoveryMapHeader } from "../features/rides/components/DiscoveryMapHeader";
 import { RideCard } from "../features/rides/components/RideCard";
 import { RideFilters } from "../features/rides/components/RideFilters";
-import { calPoly, fixtureNowIso, sfo } from "../features/rides/fixtures";
+import { calPoly, fixtureNowIso, losAngeles } from "../features/rides/fixtures";
 import { createMockMapsService } from "../features/rides/mockMapsService";
 import { createSupabaseMapsService } from "../features/rides/supabaseMapsService";
 import { fixtureRidesService } from "../features/rides/service";
@@ -32,7 +32,7 @@ type DiscoveryScreenProps = {
 type LoadState = "loading" | "ready" | "error";
 
 const demoFilters: DiscoveryFilterValues = {
-  destinationQuery: "SFO",
+  destinationQuery: "Los Angeles",
   departureDate: "2026-09-06",
   maxPriceDollars: "",
   minimumRemainingSeats: "2",
@@ -128,7 +128,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
   function useDemoPreset() {
     setPickup({ ...calPoly });
     setLocationState({ status: "idle", error: "" });
-    setDestination({ ...sfo });
+    setDestination({ ...losAngeles });
     apply(demoFilters);
   }
 
@@ -179,7 +179,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
         />
 
         <Pressable accessibilityRole="button" disabled={isApplying} onPress={useDemoPreset} style={({ pressed }) => [styles.demoButton, (pressed || isApplying) && styles.buttonMuted]}>
-          <Text style={styles.demoButtonText}>Try tomorrow · SFO · 2 seats</Text>
+          <Text style={styles.demoButtonText}>Demo SLO → LA · via Morro Bay + SBA</Text>
         </Pressable>
 
         <View style={styles.sectionHeader}>

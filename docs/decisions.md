@@ -122,6 +122,16 @@ Decision: Keep `geoapify-maps` behind Supabase gateway JWT verification, but acc
 Reason: Requiring an authenticated Supabase user made every autocomplete call from the mocked-auth demo fail, so the UI silently returned fixture locations instead of live results.
 Consequences: The proxy is reachable by holders of the public client key and consumes the project's Geoapify quota. Input limits, result limits, and provider timeouts bound each call; production auth and rate limits must replace anonymous access before launch.
 
+### D-017 — Ordered stop limit for ride creation
+
+Date: 2026-09-06
+Owner: team lead
+Status: accepted
+
+Decision: Let drivers add up to four ordered stops to a ride. Recalculate the route and contribution estimate whenever a stop is added, removed, or changed.
+Reason: Multiple stops make shared pickup routes demonstrable while a small cap keeps the mobile form readable and stays comfortably within the maps proxy’s eight-waypoint limit.
+Consequences: Stops must be unique and cannot duplicate the origin or destination. The saved order is the routing order and is shown consistently in ride cards and ride details.
+
 ## Decision entry template
 
 ```md

@@ -1,4 +1,4 @@
-import { calPoly, describeFixtureInventory, downtownSlo, fixtureNowIso, fixtureRideSeeds, sfo } from "../fixtures";
+import { calPoly, describeFixtureInventory, downtownSlo, fixtureNowIso, fixtureRideSeeds, morroBay, santaBarbaraAirport, sfo } from "../fixtures";
 import { createRidesService, fixtureRidesService } from "../service";
 import { DEFAULT_DISPLAY_TIMEZONE } from "../types";
 import { assertRideDraftIsValid, validateRideDraft } from "../validation";
@@ -90,7 +90,7 @@ async function run() {
   fixtureRidesService.reset();
 
   const inventory = describeFixtureInventory();
-  assertEqual(inventory.length, 4);
+  assertEqual(inventory.length, 6);
   assertEqual(inventory[0].id, "ride-maya-slo-sfo");
   assertEqual(inventory[0].departureAt, "2026-09-06T16:00:00.000Z");
   assertEqual(inventory[0].acceptedSeats, 1);
@@ -101,10 +101,10 @@ async function run() {
   assertEqual(mayaRide?.driver.completedRideCount, 28);
 
   const allScheduled = await service.list();
-  assertEqual(allScheduled.length, 4);
+  assertEqual(allScheduled.length, 6);
   assertDeepEqual(
     allScheduled.map((ride) => ride.id),
-    ["ride-maya-slo-sfo", "ride-jordan-slo-la", "ride-aria-slo-sb", "ride-maya-slo-monterey"],
+    ["ride-maya-slo-sfo", "ride-jordan-slo-la", "ride-aria-slo-san-diego", "ride-aria-slo-sb", "ride-jordan-slo-sacramento", "ride-maya-slo-monterey"],
   );
 
   const sfoRides = await service.list({ destinationQuery: "sfo" });
@@ -116,7 +116,7 @@ async function run() {
   const seatsFiltered = await service.list({ minimumRemainingSeats: 2 });
   assertDeepEqual(
     seatsFiltered.map((ride) => ride.id),
-    ["ride-maya-slo-sfo", "ride-jordan-slo-la", "ride-maya-slo-monterey"],
+    ["ride-maya-slo-sfo", "ride-jordan-slo-la", "ride-jordan-slo-sacramento", "ride-maya-slo-monterey"],
   );
 
   const dateFiltered = await service.list({
@@ -139,6 +139,17 @@ async function run() {
   assertEqual(normalizedSummer.departureAt, "2026-09-06T16:00:00.000Z");
   assertEqual(normalizedSummer.displayTimezone, DEFAULT_DISPLAY_TIMEZONE);
 
+  const multipleStops = assertRideDraftIsValid(makeDraft({ stops: [morroBay, santaBarbaraAirport] }), { now: fixtureNowIso });
+  assertDeepEqual(multipleStops.stops.map((stop) => stop.id), [morroBay.id, santaBarbaraAirport.id]);
+
+  const duplicateStops = validateRideDraft(makeDraft({ stops: [morroBay, morroBay] }), { now: fixtureNowIso });
+  assertEqual(duplicateStops.ok, false);
+  if (!duplicateStops.ok) assertOk(duplicateStops.errors.stops);
+
+  const tooManyStops = validateRideDraft(makeDraft({ stops: [morroBay, downtownSlo, santaBarbaraAirport, sfo, calPoly] }), { now: fixtureNowIso });
+  assertEqual(tooManyStops.ok, false);
+  if (!tooManyStops.ok) assertOk(tooManyStops.errors.stops);
+
   const normalizedWinter = assertRideDraftIsValid(
     makeDraft({
       departureDate: "2026-12-06",
@@ -149,12 +160,13 @@ async function run() {
   );
   assertEqual(normalizedWinter.departureAt, "2026-12-06T17:00:00.000Z");
 
-  const created = await service.create(makeDraft());
+  const created = await service.create(makeDraft({ stops: [morroBay, santaBarbaraAirport] }));
   assertEqual(created.status, "scheduled");
   assertEqual(created.departureAt, "2026-09-06T16:00:00.000Z");
   assertEqual(created.displayTimezone, DEFAULT_DISPLAY_TIMEZONE);
   assertEqual(created.remainingSeats, 3);
   assertEqual(created.driver.verificationStatus, "school_email");
+  assertDeepEqual(created.stops.map((stop) => stop.id), [morroBay.id, santaBarbaraAirport.id]);
 
   const createdLookup = await service.getById(created.id);
   assertEqual(createdLookup?.departureAt, "2026-09-06T16:00:00.000Z");

@@ -1,4 +1,4 @@
-import { calPoly, downtownSlo, losAngeles, monterey, santaBarbara, sfo } from "./fixtures";
+import { calPoly, downtownSlo, losAngeles, monterey, morroBay, sacramento, sanDiego, santaBarbara, santaBarbaraAirport, sfo } from "./fixtures";
 import { Place, RouteSummary } from "./types";
 import { clonePlace, cloneRouteSummary, createRouteKey, MapsService, MockMapsServiceOptions, normalizeMapsQuery } from "../../lib/maps";
 
@@ -14,6 +14,10 @@ const demoPlaces: DemoPlace[] = [
   { place: losAngeles, aliases: ["los angeles", "union station", "la"] },
   { place: santaBarbara, aliases: ["santa barbara", "state street", "sb"] },
   { place: monterey, aliases: ["monterey", "cannery row"] },
+  { place: morroBay, aliases: ["morro bay", "morro bay transit center"] },
+  { place: santaBarbaraAirport, aliases: ["santa barbara airport", "sba"] },
+  { place: sanDiego, aliases: ["san diego", "santa fe depot"] },
+  { place: sacramento, aliases: ["sacramento", "sacramento valley station"] },
 ];
 
 export const defaultDemoPlaces = demoPlaces.map((entry) => clonePlace(entry.place));
