@@ -1,1 +1,1 @@
-export { UpcomingRidesScreen as default } from '@/src/screens/UpcomingRidesScreen';
+export { DiscoveryScreen as default } from '@/src/screens/DiscoveryScreen';
