@@ -114,6 +114,7 @@ export const fixtureRideSeeds: RideSeed[] = [
     routeSummary: {
       distanceMeters: 370000,
       durationSeconds: 14400,
+      legDurationsSeconds: [1500, 12900],
     },
     departureAt: "2026-09-06T16:00:00.000Z",
     displayTimezone: DEFAULT_DISPLAY_TIMEZONE,
@@ -140,6 +141,7 @@ export const fixtureRideSeeds: RideSeed[] = [
     routeSummary: {
       distanceMeters: 365826,
       durationSeconds: 13216,
+      legDurationsSeconds: [780, 6300, 6136],
     },
     departureAt: "2026-09-06T18:30:00.000Z",
     displayTimezone: DEFAULT_DISPLAY_TIMEZONE,
@@ -166,6 +168,7 @@ export const fixtureRideSeeds: RideSeed[] = [
     routeSummary: {
       distanceMeters: 108000,
       durationSeconds: 6480,
+      legDurationsSeconds: [6480],
     },
     departureAt: "2026-09-07T20:00:00.000Z",
     displayTimezone: DEFAULT_DISPLAY_TIMEZONE,
@@ -192,6 +195,7 @@ export const fixtureRideSeeds: RideSeed[] = [
     routeSummary: {
       distanceMeters: 250000,
       durationSeconds: 11400,
+      legDurationsSeconds: [900, 10500],
     },
     departureAt: "2026-09-08T18:00:00.000Z",
     displayTimezone: DEFAULT_DISPLAY_TIMEZONE,
@@ -218,6 +222,7 @@ export const fixtureRideSeeds: RideSeed[] = [
     routeSummary: {
       distanceMeters: 570000,
       durationSeconds: 22800,
+      legDurationsSeconds: [6900, 5400, 10500],
     },
     departureAt: "2026-09-07T15:30:00.000Z",
     displayTimezone: DEFAULT_DISPLAY_TIMEZONE,
@@ -244,6 +249,7 @@ export const fixtureRideSeeds: RideSeed[] = [
     routeSummary: {
       distanceMeters: 480000,
       durationSeconds: 18600,
+      legDurationsSeconds: [8100, 10500],
     },
     departureAt: "2026-09-08T16:00:00.000Z",
     displayTimezone: DEFAULT_DISPLAY_TIMEZONE,

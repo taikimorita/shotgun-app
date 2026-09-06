@@ -16,6 +16,7 @@ export interface Place {
 export interface RouteSummary {
   distanceMeters: number;
   durationSeconds: number;
+  legDurationsSeconds?: number[];
   path?: Array<{ lat: number; lng: number }>;
 }
 

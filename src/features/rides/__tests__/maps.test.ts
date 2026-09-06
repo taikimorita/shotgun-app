@@ -63,6 +63,7 @@ async function run() {
   const route = await service.getRoute([calPoly, downtownSlo, sfo]);
   assertEqual(route.distanceMeters, 370000);
   assertEqual(route.durationSeconds, 14400);
+  assertDeepEqual(route.legDurationsSeconds, [1500, 12900]);
 
   const fallbackRoute = await service.getRoute([calPoly, sfo]);
   assertOk(fallbackRoute.distanceMeters > 0);
@@ -92,14 +93,22 @@ async function run() {
     calls.push({ name, ...options });
     return options.body.operation === "search"
       ? { data: { places: [sfo] }, error: null }
-      : { data: { route: { distanceMeters: 368123, durationSeconds: 13845, path: [{ lat: calPoly.lat, lng: calPoly.lng }, { lat: sfo.lat, lng: sfo.lng }] } }, error: null };
+      : { data: { route: { distanceMeters: 368123, durationSeconds: 13845, legDurationsSeconds: [13845], path: [{ lat: calPoly.lat, lng: calPoly.lng }, { lat: sfo.lat, lng: sfo.lng }] } }, error: null };
   });
   assertDeepEqual(await live.searchPlaces("SFO"), [sfo]);
-  assertEqual((await live.getRoute([calPoly, sfo])).distanceMeters, 368123);
+  const liveRoute = await live.getRoute([calPoly, sfo]);
+  assertEqual(liveRoute.distanceMeters, 368123);
+  assertDeepEqual(liveRoute.legDurationsSeconds, [13845]);
   assertDeepEqual(calls[0], { name: "geoapify-maps", body: { operation: "search", query: "SFO" } });
 
   const malformed = createSupabaseMapsService(async () => ({ data: { places: [{ id: "bad" }] }, error: null }));
   await assertRejects(() => malformed.searchPlaces("bad response"));
+
+  const malformedLegs = createSupabaseMapsService(async () => ({
+    data: { route: { distanceMeters: 1000, durationSeconds: 100, legDurationsSeconds: [50, 50] } },
+    error: null,
+  }));
+  await assertRejects(() => malformedLegs.getRoute([calPoly, sfo]));
 
   const mapRides = [
     { id: "one", destination: sfo, remainingSeats: 2, status: "scheduled" },

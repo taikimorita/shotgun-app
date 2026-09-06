@@ -30,6 +30,9 @@ export default function TabsLayout() {
         tabBarActiveTintColor: semanticColors.action.primaryBackground,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarHideOnKeyboard: true,
+        tabBarItemStyle: {
+          transform: [{ translateY: -spacing[1] }],
+        },
         tabBarLabelStyle: {
           fontSize: typography.fontSize.xs,
           fontWeight: typography.fontWeight.bold,

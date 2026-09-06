@@ -132,6 +132,16 @@ Decision: Let drivers add up to four ordered stops to a ride. Recalculate the ro
 Reason: Multiple stops make shared pickup routes demonstrable while a small cap keeps the mobile form readable and stays comfortably within the maps proxy’s eight-waypoint limit.
 Consequences: Stops must be unique and cannot duplicate the origin or destination. The saved order is the routing order and is shown consistently in ride cards and ride details.
 
+### D-018 — Estimated waypoint arrival times
+
+Date: 2026-09-06
+Owner: team lead
+Status: accepted
+
+Decision: Show cumulative estimated arrival times for each ride stop and the final destination. Extend the provider-neutral route summary with optional per-leg durations, while retaining proportional estimates from total route duration as a deterministic fallback.
+Reason: Riders need to understand when the ride reaches their stop, and a single total trip duration cannot accurately represent multiple waypoints.
+Consequences: Arrival times are labeled as estimates, use the ride display timezone, and do not imply live traffic or driver tracking. The maps proxy may return per-leg timing, but provider details remain behind `MapsService`.
+
 ## Decision entry template
 
 ```md

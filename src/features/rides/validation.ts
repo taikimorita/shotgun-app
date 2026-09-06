@@ -170,7 +170,19 @@ function validateRouteSummary(routeSummary: RouteSummary | null | undefined): He
   if (!isFiniteNumber(routeSummary.durationSeconds) || routeSummary.durationSeconds < 0) {
     return { error: "routeSummary.durationSeconds must be a non-negative number." };
   }
-  return { value: { ...routeSummary } };
+  if (
+    routeSummary.legDurationsSeconds != null &&
+    (!Array.isArray(routeSummary.legDurationsSeconds) ||
+      !routeSummary.legDurationsSeconds.every((duration) => isFiniteNumber(duration) && duration >= 0))
+  ) {
+    return { error: "routeSummary.legDurationsSeconds must contain non-negative numbers." };
+  }
+  return {
+    value: {
+      ...routeSummary,
+      legDurationsSeconds: routeSummary.legDurationsSeconds?.slice(),
+    },
+  };
 }
 
 function daysInMonth(year: number, month: number) {
@@ -393,6 +405,12 @@ export function validateRideDraft(
     errors.routeSummary = routeSummary.error;
   } else {
     normalizedRouteSummary = routeSummary.value;
+    if (
+      normalizedRouteSummary?.legDurationsSeconds &&
+      normalizedRouteSummary.legDurationsSeconds.length !== normalizedStops.length + 1
+    ) {
+      errors.routeSummary = "Route timing must include one duration for each waypoint pair.";
+    }
   }
 
   if (!("error" in capacity) && normalizedVehicle && capacity.value > normalizedVehicle.seatCount) {

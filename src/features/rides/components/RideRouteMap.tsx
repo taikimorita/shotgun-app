@@ -5,11 +5,11 @@ import MapView, { Marker, Polyline } from "react-native-maps";
 import type { MapsService } from "../../../lib/maps";
 import { colors, radii, semanticColors, spacing, typography } from "../../../theme/tokens";
 import { regionForPlaces } from "../mapPresentation";
-import type { Place } from "../types";
+import type { Place, RouteSummary } from "../types";
 
-type Props = { places: Place[]; service: MapsService };
+type Props = { places: Place[]; service: MapsService; onRouteChange?: (route: RouteSummary) => void };
 
-export function RideRouteMap({ places, service }: Props) {
+export function RideRouteMap({ places, service, onRouteChange }: Props) {
   const [path, setPath] = useState<Array<{ lat: number; lng: number }>>([]);
   const [status, setStatus] = useState<"loading" | "ready" | "error">("loading");
   const waypointKey = places.map((place) => place.id).join(":");
@@ -21,13 +21,14 @@ export function RideRouteMap({ places, service }: Props) {
       if (!active) return;
       setPath(route.path?.length ? route.path : places.map(({ lat, lng }) => ({ lat, lng })));
       setStatus("ready");
+      onRouteChange?.(route);
     }).catch(() => {
       if (!active) return;
       setPath(places.map(({ lat, lng }) => ({ lat, lng })));
       setStatus("error");
     });
     return () => { active = false; };
-  }, [places, service, waypointKey]);
+  }, [onRouteChange, places, service, waypointKey]);
 
   const region = useMemo(() => regionForPlaces(places), [places]);
   const coordinates = path.map(({ lat, lng }) => ({ latitude: lat, longitude: lng }));
@@ -39,8 +40,8 @@ export function RideRouteMap({ places, service }: Props) {
         <Marker coordinate={{ latitude: places[0].lat, longitude: places[0].lng }} title={places[0].label} tracksViewChanges={false}>
           <View style={styles.originBadge}><Image source={require("../../../../Images/GradCapOrange.png")} style={styles.originImage} /></View>
         </Marker>
-        {places.slice(1, -1).map((stop) => <Marker key={stop.id} coordinate={{ latitude: stop.lat, longitude: stop.lng }} description="Suggested stop" pinColor={colors.peach} title={stop.label} />)}
-        <Marker coordinate={{ latitude: places.at(-1)!.lat, longitude: places.at(-1)!.lng }} description="Ride destination" pinColor={colors.steel} title={places.at(-1)!.label} />
+        {places.slice(1, -1).map((stop) => <Marker key={stop.id} coordinate={{ latitude: stop.lat, longitude: stop.lng }} description="Suggested stop" pinColor={colors.steel} title={stop.label} />)}
+        <Marker coordinate={{ latitude: places.at(-1)!.lat, longitude: places.at(-1)!.lng }} description="Ride destination" pinColor={colors.navyStrong} title={places.at(-1)!.label} />
       </MapView>
       {status === "loading" ? <View style={styles.status}><ActivityIndicator color={colors.steel} /><Text style={styles.statusText}>Loading route…</Text></View> : null}
       {status === "error" ? <Text accessibilityRole="alert" style={styles.fallback}>Approximate route</Text> : null}

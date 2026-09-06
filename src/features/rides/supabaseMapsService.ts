@@ -47,6 +47,12 @@ export function createSupabaseMapsService(
       if (error) throw mapsError(error);
       const route = (data as Partial<RouteResponse> | null)?.route;
       if (!route || !isFiniteNumber(route.distanceMeters) || !isFiniteNumber(route.durationSeconds)) throw mapsError(null);
+      if (
+        route.legDurationsSeconds != null &&
+        (!Array.isArray(route.legDurationsSeconds) ||
+          route.legDurationsSeconds.length !== stops.length - 1 ||
+          !route.legDurationsSeconds.every((duration) => isFiniteNumber(duration) && duration >= 0))
+      ) throw mapsError(null);
       if (route.path != null && (!Array.isArray(route.path) || !route.path.every(isRoutePoint))) throw mapsError(null);
       return route;
     },

@@ -150,6 +150,13 @@ async function run() {
   assertEqual(tooManyStops.ok, false);
   if (!tooManyStops.ok) assertOk(tooManyStops.errors.stops);
 
+  const mismatchedRouteLegs = validateRideDraft(makeDraft({
+    stops: [morroBay, santaBarbaraAirport],
+    routeSummary: { distanceMeters: 1000, durationSeconds: 100, legDurationsSeconds: [100] },
+  }), { now: fixtureNowIso });
+  assertEqual(mismatchedRouteLegs.ok, false);
+  if (!mismatchedRouteLegs.ok) assertOk(mismatchedRouteLegs.errors.routeSummary);
+
   const normalizedWinter = assertRideDraftIsValid(
     makeDraft({
       departureDate: "2026-12-06",
