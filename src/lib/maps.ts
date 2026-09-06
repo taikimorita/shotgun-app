@@ -59,5 +59,9 @@ export function clonePlace(place: Place): Place {
 }
 
 export function cloneRouteSummary(routeSummary: RouteSummary): RouteSummary {
-  return { ...routeSummary, path: routeSummary.path?.map((point) => ({ ...point })) };
+  return {
+    ...routeSummary,
+    legDurationsSeconds: routeSummary.legDurationsSeconds?.slice(),
+    path: routeSummary.path?.map((point) => ({ ...point })),
+  };
 }

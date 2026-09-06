@@ -69,6 +69,15 @@ async function run() {
   const rides = await service.list(tomorrow.filters);
   assertDeepEqual(rides.map((ride) => ride.id), ["ride-maya-slo-sfo"]);
 
+  const showcase = validateAndBuildRideFilters({
+    ...emptyDiscoveryFilters,
+    destinationQuery: "Los Angeles",
+    departureDate: "2026-09-06",
+    minimumRemainingSeats: "2",
+  });
+  assertOk(showcase);
+  assertDeepEqual((await service.list(showcase.filters)).map((ride) => ride.id), ["ride-jordan-slo-la"]);
+
   const exactCents = validateAndBuildRideFilters({ ...emptyDiscoveryFilters, maxPriceDollars: "0.01" });
   assertOk(exactCents);
   assertEqual(exactCents.filters.maxPriceCents, 1);

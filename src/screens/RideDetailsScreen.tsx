@@ -5,6 +5,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { BookingStatusPill } from "../components/BookingStatusPill";
 import { currentUser, rides } from "../data/fixtures";
+import { estimateWaypointArrivalTimes } from "../features/rides/arrivalTimes";
 import { RideRouteMap } from "../features/rides/components/RideRouteMap";
 import { fixtureRideSeeds } from "../features/rides/fixtures";
 import { createMockMapsService } from "../features/rides/mockMapsService";
@@ -18,6 +19,14 @@ function formatPrice(value: number) {
   return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(value);
 }
 
+function formatArrivalTime(value: string, timeZone: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(value));
+}
+
 export function RideDetailsScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ rideId?: string | string[] }>();
@@ -26,6 +35,11 @@ export function RideDetailsScreen() {
   const routeRide = fixtureRideSeeds.find((item) => item.id === rideId);
   const routePlaces = useMemo(() => routeRide ? [routeRide.origin, ...routeRide.stops, routeRide.destination] : [], [routeRide]);
   const mapsService = useMemo(() => withRouteFallback(createSupabaseMapsService(), createMockMapsService({ delayMs: 120 })), []);
+  const [routeSummary, setRouteSummary] = useState(routeRide?.routeSummary ?? null);
+  const arrivalTimes = useMemo(
+    () => routeRide ? estimateWaypointArrivalTimes(routeRide.departureAt, routePlaces, routeSummary) : [],
+    [routePlaces, routeRide, routeSummary],
+  );
   const { riderBookings } = useBookings();
   const booking = ride ? riderBookings.find((item) => item.rideId === ride.id) : undefined;
   const [saving, setSaving] = useState(false);
@@ -77,14 +91,32 @@ export function RideDetailsScreen() {
           <Text style={styles.time}>{ride.departureTime}</Text>
         </View>
 
-        {routePlaces.length >= 2 ? <RideRouteMap places={routePlaces} service={mapsService} /> : null}
+        {routePlaces.length >= 2 ? (
+          <RideRouteMap places={routePlaces} service={mapsService} onRouteChange={setRouteSummary} />
+        ) : null}
 
         <View style={styles.routeCard}>
           {routePlaces.map((place, index) => {
             const isOrigin = index === 0;
             const isDestination = index === routePlaces.length - 1;
-            return <View key={place.id} style={styles.routeRow}><View style={[styles.routeDot, isOrigin && styles.originDot, isDestination && styles.destinationDot]} /><View style={styles.routeCopy}><Text style={styles.routeKind}>{isOrigin ? "ORIGIN" : isDestination ? "DESTINATION" : "SUGGESTED STOP"}</Text><Text style={styles.place}>{place.label}</Text></View></View>;
+            const time = arrivalTimes[index];
+            return (
+              <View key={place.id} style={styles.routeRow}>
+                <View style={[styles.routeDot, isOrigin && styles.originDot, isDestination && styles.destinationDot]} />
+                <View style={styles.routeCopy}>
+                  <Text style={styles.routeKind}>{isOrigin ? "ORIGIN" : isDestination ? "DESTINATION" : "SUGGESTED STOP"}</Text>
+                  <Text style={styles.place}>{place.label}</Text>
+                </View>
+                {time && routeRide ? (
+                  <View style={styles.routeTimeCopy}>
+                    <Text style={styles.routeTimeLabel}>{isOrigin ? "Departs" : "Est. arrival"}</Text>
+                    <Text style={styles.routeTime}>{formatArrivalTime(time, routeRide.displayTimezone)}</Text>
+                  </View>
+                ) : null}
+              </View>
+            );
           })}
+          {arrivalTimes.length > 0 ? <Text style={styles.arrivalNote}>Arrival times are estimates and may change with traffic or stop length.</Text> : null}
         </View>
 
         <View style={styles.card}>
@@ -160,6 +192,10 @@ const styles = StyleSheet.create({
   routeCopy: { flex: 1, gap: spacing[1] },
   routeKind: { color: colors.textMuted, fontSize: typography.fontSize.xs, fontWeight: typography.fontWeight.bold, letterSpacing: typography.letterSpacing.label },
   place: { color: colors.ink, fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.bold },
+  routeTimeCopy: { alignItems: "flex-end", gap: spacing[1], minWidth: 76 },
+  routeTimeLabel: { color: colors.textMuted, fontSize: typography.fontSize.xs },
+  routeTime: { color: colors.navy, fontSize: typography.fontSize.md, fontWeight: typography.fontWeight.heavy },
+  arrivalNote: { color: colors.textMuted, fontSize: typography.fontSize.xs, lineHeight: 18, marginTop: spacing[1] },
   card: { backgroundColor: semanticColors.app.surface, borderColor: colors.border, borderRadius: componentTokens.card.radius, borderWidth: 1, gap: spacing[3], padding: componentTokens.card.padding },
   section: { color: colors.ink, fontSize: typography.fontSize.lg, fontWeight: typography.fontWeight.heavy },
   body: { color: colors.text, fontSize: typography.fontSize.md, lineHeight: 23 },

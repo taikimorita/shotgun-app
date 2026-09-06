@@ -1,4 +1,5 @@
 export const DEFAULT_DISPLAY_TIMEZONE = "America/Los_Angeles" as const;
+export const MAX_RIDE_STOPS = 4;
 
 export type RideStatus = "scheduled" | "in_progress" | "completed" | "cancelled";
 export type PriceSource = "suggested" | "driver_set";
@@ -15,6 +16,7 @@ export interface Place {
 export interface RouteSummary {
   distanceMeters: number;
   durationSeconds: number;
+  legDurationsSeconds?: number[];
   path?: Array<{ lat: number; lng: number }>;
 }
 
@@ -95,6 +97,8 @@ export interface NormalizedRideDraft {
 
 export interface RideFilters {
   destinationQuery?: string;
+  pickupPlace?: Place;
+  routePointPlace?: Place;
   departureAtGte?: string;
   departureAtLte?: string;
   maxPriceCents?: number;

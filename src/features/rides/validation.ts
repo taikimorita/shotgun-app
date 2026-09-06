@@ -1,6 +1,7 @@
 import {
   DEFAULT_DISPLAY_TIMEZONE,
   DriverSummary,
+  MAX_RIDE_STOPS,
   NormalizedRideDraft,
   Place,
   RideDraftErrors,
@@ -10,10 +11,6 @@ import {
   VehicleSummary,
   ValidationResult,
 } from "./types";
-
-function normalizeText(value: string) {
-  return value.trim().replace(/\s+/g, " ").toLowerCase();
-}
 
 function isFiniteNumber(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value);
@@ -173,7 +170,19 @@ function validateRouteSummary(routeSummary: RouteSummary | null | undefined): He
   if (!isFiniteNumber(routeSummary.durationSeconds) || routeSummary.durationSeconds < 0) {
     return { error: "routeSummary.durationSeconds must be a non-negative number." };
   }
-  return { value: { ...routeSummary } };
+  if (
+    routeSummary.legDurationsSeconds != null &&
+    (!Array.isArray(routeSummary.legDurationsSeconds) ||
+      !routeSummary.legDurationsSeconds.every((duration) => isFiniteNumber(duration) && duration >= 0))
+  ) {
+    return { error: "routeSummary.legDurationsSeconds must contain non-negative numbers." };
+  }
+  return {
+    value: {
+      ...routeSummary,
+      legDurationsSeconds: routeSummary.legDurationsSeconds?.slice(),
+    },
+  };
 }
 
 function daysInMonth(year: number, month: number) {
@@ -278,7 +287,7 @@ function toUtcIso(datePart: string, timePart: string, timeZone: string): string 
 }
 
 function comparePlaces(left: Place, right: Place) {
-  return normalizeText(left.label) === normalizeText(right.label) && left.lat === right.lat && left.lng === right.lng;
+  return left.id === right.id || (Math.abs(left.lat - right.lat) < 0.000001 && Math.abs(left.lng - right.lng) < 0.000001);
 }
 
 export function validateRideDraft(
@@ -325,10 +334,25 @@ export function validateRideDraft(
 
   const stops = Array.isArray(draft.stops) ? draft.stops : [];
   const normalizedStops: Place[] = [];
+  if (stops.length > MAX_RIDE_STOPS) {
+    errors.stops = `A ride can have up to ${MAX_RIDE_STOPS} stops.`;
+  }
   for (const stop of stops) {
+    if (errors.stops) break;
     const validatedStop = validatePlace(stop, "stops");
     if ("error" in validatedStop) {
       errors.stops = validatedStop.error;
+      break;
+    }
+    if (
+      (normalizedOrigin && comparePlaces(validatedStop.value, normalizedOrigin)) ||
+      (normalizedDestination && comparePlaces(validatedStop.value, normalizedDestination))
+    ) {
+      errors.stops = "Stops must differ from the origin and destination.";
+      break;
+    }
+    if (normalizedStops.some((existing) => comparePlaces(existing, validatedStop.value))) {
+      errors.stops = "Each stop can appear only once.";
       break;
     }
     normalizedStops.push(validatedStop.value);
@@ -381,6 +405,12 @@ export function validateRideDraft(
     errors.routeSummary = routeSummary.error;
   } else {
     normalizedRouteSummary = routeSummary.value;
+    if (
+      normalizedRouteSummary?.legDurationsSeconds &&
+      normalizedRouteSummary.legDurationsSeconds.length !== normalizedStops.length + 1
+    ) {
+      errors.routeSummary = "Route timing must include one duration for each waypoint pair.";
+    }
   }
 
   if (!("error" in capacity) && normalizedVehicle && capacity.value > normalizedVehicle.seatCount) {

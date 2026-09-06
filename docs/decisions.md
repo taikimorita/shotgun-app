@@ -128,6 +128,29 @@ Date: 2026-09-06
 Owner: team lead
 Status: accepted
 
+Decision: Let drivers add up to four ordered stops to a ride. Recalculate the route and contribution estimate whenever a stop is added, removed, or changed.
+Reason: Multiple stops make shared pickup routes demonstrable while a small cap keeps the mobile form readable and stays comfortably within the maps proxy’s eight-waypoint limit.
+Consequences: Stops must be unique and cannot duplicate the origin or destination. The saved order is the routing order and is shown consistently in ride cards and ride details.
+
+### D-018 — Estimated waypoint arrival times
+
+Date: 2026-09-06
+Owner: team lead
+Status: accepted
+
+Decision: Show cumulative estimated arrival times for each ride stop and the final destination. Extend the provider-neutral route summary with optional per-leg durations, while retaining proportional estimates from total route duration as a deterministic fallback.
+Reason: Riders need to understand when the ride reaches their stop, and a single total trip duration cannot accurately represent multiple waypoints.
+Consequences: Arrival times are labeled as estimates, use the ride display timezone, and do not imply live traffic or driver tracking. The maps proxy may return per-leg timing, but provider details remain behind `MapsService`.
+
+### D-019 — Route-aware discovery matching
+
+Date: 2026-09-06
+Owner: team lead
+Status: accepted
+
+Decision: Match Find searches against every ordered stop plus the final destination, and restrict results to rides whose origin is within 10 kilometers of the selected or foreground pickup location. Prefer coordinate proximity for autocomplete selections and retain normalized label matching for text-only filters.
+Reason: A rider should discover a usable ride when their destination is an intermediate stop, even when the maps provider and ride fixture use different labels for the same place.
+Consequences: The Find map displays all available stop and destination points. The MVP hydrates candidate Supabase rides before applying route-point proximity; a production-scale version should move this filtering into a PostGIS-backed query.
 Decision: After a rider picks a Find destination from `MapsService`, rank and keep rides whose destination or stop is within 80 km of that place. Do not match on Geoapify’s full address string. Date, price, and seat filters still apply.
 Reason: Live autocomplete labels rarely equal stored ride labels, so substring search hid valid SFO/LA rides. Distance is the useful judge-facing sort.
 Consequences: The Find list updates as soon as a destination place is selected. Label substring search remains available only when a destination query is sent through the existing filter path (for example the demo preset).

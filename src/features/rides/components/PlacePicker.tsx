@@ -37,7 +37,7 @@ export function PlacePicker({
   service,
   disabled = false,
   helperText,
-  placeholder = "Search Cal Poly, SFO, or downtown SLO",
+  placeholder = "Search anywhere",
   fallbackPlaces = defaultDemoPlaces,
 }: PlacePickerProps) {
   const valueId = value?.id ?? null;

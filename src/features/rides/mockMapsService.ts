@@ -1,4 +1,4 @@
-import { calPoly, downtownSlo, losAngeles, monterey, santaBarbara, sfo } from "./fixtures";
+import { calPoly, downtownSlo, losAngeles, monterey, morroBay, sacramento, sanDiego, santaBarbara, santaBarbaraAirport, sfo } from "./fixtures";
 import { Place, RouteSummary } from "./types";
 import { clonePlace, cloneRouteSummary, createRouteKey, MapsService, MockMapsServiceOptions, normalizeMapsQuery } from "../../lib/maps";
 
@@ -14,6 +14,10 @@ const demoPlaces: DemoPlace[] = [
   { place: losAngeles, aliases: ["los angeles", "union station", "la"] },
   { place: santaBarbara, aliases: ["santa barbara", "state street", "sb"] },
   { place: monterey, aliases: ["monterey", "cannery row"] },
+  { place: morroBay, aliases: ["morro bay", "morro bay transit center"] },
+  { place: santaBarbaraAirport, aliases: ["santa barbara airport", "sba"] },
+  { place: sanDiego, aliases: ["san diego", "santa fe depot"] },
+  { place: sacramento, aliases: ["sacramento", "sacramento valley station"] },
 ];
 
 export const defaultDemoPlaces = demoPlaces.map((entry) => clonePlace(entry.place));
@@ -24,6 +28,7 @@ const demoRoutes = new Map<string, RouteSummary>([
     {
       distanceMeters: 370000,
       durationSeconds: 14400,
+      legDurationsSeconds: [1500, 12900],
     },
   ],
   [
@@ -31,6 +36,7 @@ const demoRoutes = new Map<string, RouteSummary>([
     {
       distanceMeters: 368000,
       durationSeconds: 13800,
+      legDurationsSeconds: [13800],
     },
   ],
   [
@@ -38,6 +44,7 @@ const demoRoutes = new Map<string, RouteSummary>([
     {
       distanceMeters: 22000,
       durationSeconds: 1500,
+      legDurationsSeconds: [1500],
     },
   ],
   [
@@ -45,6 +52,15 @@ const demoRoutes = new Map<string, RouteSummary>([
     {
       distanceMeters: 347000,
       durationSeconds: 13200,
+      legDurationsSeconds: [13200],
+    },
+  ],
+  [
+    createRouteKey([calPoly, morroBay, santaBarbaraAirport, losAngeles]),
+    {
+      distanceMeters: 365826,
+      durationSeconds: 13216,
+      legDurationsSeconds: [780, 6300, 6136],
     },
   ],
 ]);
@@ -73,7 +89,7 @@ function scorePlace(place: DemoPlace, query: string) {
 }
 
 function estimateRoute(stops: readonly Place[]): RouteSummary {
-  let distanceMeters = 0;
+  const legDistancesMeters: number[] = [];
   for (let index = 1; index < stops.length; index += 1) {
     const previous = stops[index - 1];
     const current = stops[index];
@@ -86,12 +102,16 @@ function estimateRoute(stops: readonly Place[]): RouteSummary {
       Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
       Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    distanceMeters += 6371000 * c;
+    legDistancesMeters.push(6371000 * c);
   }
+
+  const distanceMeters = legDistancesMeters.reduce((total, distance) => total + distance, 0);
+  const legDurationsSeconds = legDistancesMeters.map((distance) => Math.max(300, Math.round((distance / 1609.344 / 42) * 3600)));
 
   return {
     distanceMeters: Math.round(distanceMeters),
-    durationSeconds: Math.max(300, Math.round((distanceMeters / 1609.344 / 42) * 3600)),
+    durationSeconds: legDurationsSeconds.reduce((total, duration) => total + duration, 0),
+    legDurationsSeconds,
   };
 }
 

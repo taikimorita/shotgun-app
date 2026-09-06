@@ -30,6 +30,9 @@ export default function TabsLayout() {
         tabBarActiveTintColor: semanticColors.action.primaryBackground,
         tabBarInactiveTintColor: colors.textMuted,
         tabBarHideOnKeyboard: true,
+        tabBarItemStyle: {
+          transform: [{ translateY: spacing[1] }],
+        },
         tabBarLabelStyle: {
           fontSize: typography.fontSize.xs,
           fontWeight: typography.fontWeight.bold,
@@ -39,8 +42,8 @@ export default function TabsLayout() {
           backgroundColor: semanticColors.app.surface,
           borderTopColor: semanticColors.app.border,
           borderTopWidth: 1,
-          height: 72,
-          paddingTop: spacing[2],
+          height: 88,
+          paddingTop: spacing[0],
         },
       }}
     >

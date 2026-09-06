@@ -8,11 +8,21 @@ import {
   RideFilters,
   RideSeed,
   RidesService,
+  RouteSummary,
 } from "./types";
 import { assertRideDraftIsValid } from "./validation";
+import { rideMatchesDiscoveryRoute } from "./routeMatching";
 
 function clonePlace(place: Place): Place {
   return { ...place };
+}
+
+function cloneRouteSummary(routeSummary: RouteSummary): RouteSummary {
+  return {
+    ...routeSummary,
+    legDurationsSeconds: routeSummary.legDurationsSeconds?.slice(),
+    path: routeSummary.path?.map((point) => ({ ...point })),
+  };
 }
 
 function cloneRide(ride: Ride): Ride {
@@ -23,7 +33,7 @@ function cloneRide(ride: Ride): Ride {
     origin: clonePlace(ride.origin),
     destination: clonePlace(ride.destination),
     stops: ride.stops.map(clonePlace),
-    routeSummary: ride.routeSummary ? { ...ride.routeSummary } : null,
+    routeSummary: ride.routeSummary ? cloneRouteSummary(ride.routeSummary) : null,
   };
 }
 
@@ -35,7 +45,7 @@ function cloneSeed(seed: RideSeed): RideSeed {
     origin: clonePlace(seed.origin),
     destination: clonePlace(seed.destination),
     stops: seed.stops.map(clonePlace),
-    routeSummary: seed.routeSummary ? { ...seed.routeSummary } : null,
+    routeSummary: seed.routeSummary ? cloneRouteSummary(seed.routeSummary) : null,
     bookings: seed.bookings.map((booking) => ({ ...booking })),
   };
 }
@@ -54,7 +64,7 @@ function toRide(seed: RideSeed): Ride {
     origin: clonePlace(seed.origin),
     destination: clonePlace(seed.destination),
     stops: seed.stops.map(clonePlace),
-    routeSummary: seed.routeSummary ? { ...seed.routeSummary } : null,
+    routeSummary: seed.routeSummary ? cloneRouteSummary(seed.routeSummary) : null,
     departureAt: seed.departureAt,
     displayTimezone: seed.displayTimezone ?? DEFAULT_DISPLAY_TIMEZONE,
     capacity: seed.capacity,
@@ -68,14 +78,8 @@ function toRide(seed: RideSeed): Ride {
   };
 }
 
-function normalizeQuery(value: string) {
-  return value.trim().replace(/\s+/g, " ").toLowerCase();
-}
-
 function matchesFilters(ride: Ride, filters: RideFilters) {
-  if (filters.destinationQuery && !normalizeQuery(ride.destination.label).includes(normalizeQuery(filters.destinationQuery))) {
-    return false;
-  }
+  if (!rideMatchesDiscoveryRoute(ride, filters)) return false;
   if (filters.departureAtGte && ride.departureAt < filters.departureAtGte) {
     return false;
   }
@@ -126,7 +130,7 @@ function applyDraft(
     origin: clonePlace(normalizedDraft.origin),
     destination: clonePlace(normalizedDraft.destination),
     stops: normalizedDraft.stops.map(clonePlace),
-    routeSummary: normalizedDraft.routeSummary ? { ...normalizedDraft.routeSummary } : null,
+    routeSummary: normalizedDraft.routeSummary ? cloneRouteSummary(normalizedDraft.routeSummary) : null,
     departureAt: normalizedDraft.departureAt,
     displayTimezone: normalizedDraft.displayTimezone,
     capacity: normalizedDraft.capacity,
@@ -166,7 +170,7 @@ export function createRidesService(options?: { now?: () => Date | string; seeds?
         origin: clonePlace(normalized.origin),
         destination: clonePlace(normalized.destination),
         stops: normalized.stops.map(clonePlace),
-        routeSummary: normalized.routeSummary ? { ...normalized.routeSummary } : null,
+        routeSummary: normalized.routeSummary ? cloneRouteSummary(normalized.routeSummary) : null,
         departureAt: normalized.departureAt,
         displayTimezone: normalized.displayTimezone,
         capacity: normalized.capacity,

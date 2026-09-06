@@ -100,10 +100,19 @@ async function getRoute(stops: PlaceInput[], apiKey: string) {
   const pointCount = routeLines.reduce((total, line) => total + line.length, 0);
   const stride = Math.max(1, Math.ceil(pointCount / 700));
   const path = routeLines.flatMap((line) => line.filter((_, index) => index % stride === 0 || index === line.length - 1));
+  const legs = properties && Array.isArray(properties.legs) ? properties.legs : [];
+  const legDurationsSeconds = legs.flatMap((leg) => isRecord(leg) && typeof leg.time === "number" ? [Math.round(leg.time)] : []);
   if (!properties || typeof properties.distance !== "number" || typeof properties.time !== "number" || path.length < 2) {
     throw new Error("Geoapify returned no route");
   }
-  return json({ route: { distanceMeters: Math.round(properties.distance), durationSeconds: Math.round(properties.time), path } });
+  return json({
+    route: {
+      distanceMeters: Math.round(properties.distance),
+      durationSeconds: Math.round(properties.time),
+      legDurationsSeconds: legDurationsSeconds.length === stops.length - 1 ? legDurationsSeconds : undefined,
+      path,
+    },
+  });
 }
 
 Deno.serve(async (request) => {

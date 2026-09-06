@@ -108,8 +108,8 @@ export default function SignInScreen() {
               accessible={false}
               importantForAccessibility="no"
               resizeMode="cover"
-              source={require('../../shotgun-login/login-reference.png')}
-              style={styles.referenceArt}
+              source={require('../../Images/CoverGif.gif')}
+              style={styles.heroArt}
             />
           </View>
 
@@ -212,12 +212,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
   },
-  referenceArt: {
-    aspectRatio: 492 / 909,
-    left: '-5%',
-    position: 'absolute',
-    top: -105,
-    width: '110%',
+  heroArt: {
+    height: '100%',
+    width: '100%',
   },
   form: {
     backgroundColor: colors.steel,

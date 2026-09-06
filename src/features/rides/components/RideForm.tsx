@@ -19,6 +19,7 @@ import { PlacePicker } from "./PlacePicker";
 import {
   DEFAULT_DISPLAY_TIMEZONE,
   DriverSummary,
+  MAX_RIDE_STOPS,
   Place,
   PriceSource,
   Ride,
@@ -41,7 +42,7 @@ export type RideFormProps = {
 type FormValues = {
   origin: Place | null;
   destination: Place | null;
-  stop: Place | null;
+  stops: Array<{ key: number; place: Place | null }>;
   departureDate: string;
   departureTime: string;
   capacity: string;
@@ -83,7 +84,7 @@ function initialValues(now: Date | string | undefined): FormValues {
   return {
     origin: { ...calPoly },
     destination: { ...sfo },
-    stop: null,
+    stops: [],
     departureDate: tomorrowInLosAngeles(now),
     departureTime: "09:00",
     capacity: "3",
@@ -125,7 +126,6 @@ function FieldError({ message }: { message?: string }) {
 export function RideForm({ ridesService, mapsService, driver, vehicle, now, onPublished }: RideFormProps) {
   const defaults = useMemo(() => initialValues(now), [now]);
   const [values, setValues] = useState<FormValues>(defaults);
-  const [showStop, setShowStop] = useState(false);
   const [errors, setErrors] = useState<RideDraftErrors>({});
   const [routeSummary, setRouteSummary] = useState<RouteSummary | null>(null);
   const [routeState, setRouteState] = useState<RouteState>("idle");
@@ -137,8 +137,8 @@ export function RideForm({ ridesService, mapsService, driver, vehicle, now, onPu
   const priceSource: PriceSource = suggestedCents != null && enteredPriceCents === suggestedCents ? "suggested" : "driver_set";
 
   const routePlaces = useMemo(
-    () => [values.origin, values.stop, values.destination].filter((place): place is Place => Boolean(place)),
-    [values.destination, values.origin, values.stop],
+    () => [values.origin, ...values.stops.map((stop) => stop.place), values.destination].filter((place): place is Place => Boolean(place)),
+    [values.destination, values.origin, values.stops],
   );
 
   useEffect(() => {
@@ -201,9 +201,18 @@ export function RideForm({ ridesService, mapsService, driver, vehicle, now, onPu
     update("priceDollars", dollarsFromCents(suggestedCents));
   }
 
-  function removeStop() {
-    update("stop", null);
-    setShowStop(false);
+  function updateStop(index: number, place: Place | null) {
+    update("stops", values.stops.map((current, stopIndex) => stopIndex === index ? { ...current, place } : current));
+  }
+
+  function removeStop(index: number) {
+    update("stops", values.stops.filter((_, stopIndex) => stopIndex !== index));
+  }
+
+  function addStop() {
+    if (values.stops.length >= MAX_RIDE_STOPS) return;
+    const nextKey = values.stops.reduce((highest, stop) => Math.max(highest, stop.key), 0) + 1;
+    update("stops", [...values.stops, { key: nextKey, place: null }]);
   }
 
   async function submit() {
@@ -214,7 +223,7 @@ export function RideForm({ ridesService, mapsService, driver, vehicle, now, onPu
       vehicle,
       origin: values.origin as Place,
       destination: values.destination as Place,
-      stops: values.stop ? [values.stop] : [],
+      stops: values.stops.map((stop) => stop.place).filter((stop): stop is Place => Boolean(stop)),
       routeSummary,
       departureDate: values.departureDate,
       departureTime: values.departureTime,
@@ -283,26 +292,27 @@ export function RideForm({ ridesService, mapsService, driver, vehicle, now, onPu
           />
           <FieldError message={errors.destination} />
 
-          {showStop ? (
-            <View style={styles.stopBlock}>
+          {values.stops.map((stop, index) => (
+            <View key={stop.key} style={styles.stopBlock}>
               <PlacePicker
-                label="Optional stop 1"
-                value={values.stop}
-                onChange={(place) => update("stop", place)}
+                label={`Stop ${index + 1}`}
+                value={stop.place}
+                onChange={(place) => updateStop(index, place)}
                 service={mapsService}
                 disabled={submitting}
                 helperText="Stops are used in the order shown."
               />
-              <Pressable accessibilityRole="button" accessibilityLabel="Remove optional stop" disabled={submitting} onPress={removeStop} style={styles.textButton}>
+              <Pressable accessibilityRole="button" accessibilityLabel={`Remove stop ${index + 1}`} disabled={submitting} onPress={() => removeStop(index)} style={styles.textButton}>
                 <Text style={styles.textButtonLabel}>Remove stop</Text>
               </Pressable>
-              <FieldError message={errors.stops} />
             </View>
-          ) : (
-            <Pressable accessibilityRole="button" accessibilityLabel="Add an optional pickup stop" disabled={submitting} onPress={() => setShowStop(true)} style={styles.addStopButton}>
-              <Text style={styles.addStopLabel}>＋ Add an optional pickup stop</Text>
+          ))}
+          <FieldError message={errors.stops} />
+          {values.stops.length < MAX_RIDE_STOPS ? (
+            <Pressable accessibilityRole="button" accessibilityLabel={values.stops.length ? "Add another stop" : "Add an optional stop"} disabled={submitting} onPress={addStop} style={styles.addStopButton}>
+              <Text style={styles.addStopLabel}>＋ {values.stops.length ? "Add another stop" : "Add an optional stop"}</Text>
             </Pressable>
-          )}
+          ) : <Text style={styles.helperText}>Maximum of {MAX_RIDE_STOPS} stops reached.</Text>}
           <Text style={styles.routeStatus}>{routeLabel}</Text>
           {routeState === "error" ? <Text accessibilityRole="alert" style={styles.warningText}>Maps couldn’t calculate this route. You can still publish using the selected places.</Text> : null}
           {routeState === "loading" ? <ActivityIndicator accessibilityLabel="Calculating route" color={semanticColors.action.primaryBackground} /> : null}

@@ -63,6 +63,7 @@ async function run() {
   const route = await service.getRoute([calPoly, downtownSlo, sfo]);
   assertEqual(route.distanceMeters, 370000);
   assertEqual(route.durationSeconds, 14400);
+  assertDeepEqual(route.legDurationsSeconds, [1500, 12900]);
 
   const fallbackRoute = await service.getRoute([calPoly, sfo]);
   assertOk(fallbackRoute.distanceMeters > 0);
@@ -92,21 +93,29 @@ async function run() {
     calls.push({ name, ...options });
     return options.body.operation === "search"
       ? { data: { places: [sfo] }, error: null }
-      : { data: { route: { distanceMeters: 368123, durationSeconds: 13845, path: [{ lat: calPoly.lat, lng: calPoly.lng }, { lat: sfo.lat, lng: sfo.lng }] } }, error: null };
+      : { data: { route: { distanceMeters: 368123, durationSeconds: 13845, legDurationsSeconds: [13845], path: [{ lat: calPoly.lat, lng: calPoly.lng }, { lat: sfo.lat, lng: sfo.lng }] } }, error: null };
   });
   assertDeepEqual(await live.searchPlaces("SFO"), [sfo]);
-  assertEqual((await live.getRoute([calPoly, sfo])).distanceMeters, 368123);
+  const liveRoute = await live.getRoute([calPoly, sfo]);
+  assertEqual(liveRoute.distanceMeters, 368123);
+  assertDeepEqual(liveRoute.legDurationsSeconds, [13845]);
   assertDeepEqual(calls[0], { name: "geoapify-maps", body: { operation: "search", query: "SFO" } });
 
   const malformed = createSupabaseMapsService(async () => ({ data: { places: [{ id: "bad" }] }, error: null }));
   await assertRejects(() => malformed.searchPlaces("bad response"));
 
+  const malformedLegs = createSupabaseMapsService(async () => ({
+    data: { route: { distanceMeters: 1000, durationSeconds: 100, legDurationsSeconds: [50, 50] } },
+    error: null,
+  }));
+  await assertRejects(() => malformedLegs.getRoute([calPoly, sfo]));
+
   const mapRides = [
-    { id: "one", destination: sfo, remainingSeats: 2, status: "scheduled" },
-    { id: "duplicate", destination: { ...sfo, id: "same-coordinates" }, remainingSeats: 1, status: "scheduled" },
-    { id: "two", destination: downtownSlo, remainingSeats: 3, status: "scheduled" },
-    { id: "full", destination: calPoly, remainingSeats: 0, status: "scheduled" },
-    { id: "cancelled", destination: calPoly, remainingSeats: 2, status: "cancelled" },
+    { id: "one", stops: [downtownSlo], destination: sfo, remainingSeats: 2, status: "scheduled" },
+    { id: "duplicate", stops: [], destination: { ...sfo, id: "same-coordinates" }, remainingSeats: 1, status: "scheduled" },
+    { id: "two", stops: [], destination: downtownSlo, remainingSeats: 3, status: "scheduled" },
+    { id: "full", stops: [], destination: calPoly, remainingSeats: 0, status: "scheduled" },
+    { id: "cancelled", stops: [], destination: calPoly, remainingSeats: 2, status: "cancelled" },
   ] as Ride[];
   assertDeepEqual(uniqueRideDestinations(mapRides).map((place) => place.id), [sfo.id, downtownSlo.id]);
   const geoapifySfo = { ...sfo, id: "geoapify-sfo-terminal", label: "San Francisco International Airport, CA, United States of America" };

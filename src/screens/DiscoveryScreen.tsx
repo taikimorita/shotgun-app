@@ -33,11 +33,19 @@ type DiscoveryScreenProps = {
 type LoadState = "loading" | "ready" | "error";
 
 const demoFilters: DiscoveryFilterValues = {
-  destinationQuery: "SFO",
+  destinationQuery: "Los Angeles",
   departureDate: "2026-09-06",
   maxPriceDollars: "",
   minimumRemainingSeats: "2",
 };
+
+function withSelectedPlaces(filters: RideFilterQuery, pickup: Place | null, destination: Place | null): RideFilterQuery {
+  return {
+    ...filters,
+    pickupPlace: pickup ? { ...pickup } : undefined,
+    routePointPlace: destination ? { ...destination } : undefined,
+  };
+}
 
 function hasFilters(value: DiscoveryFilterValues) {
   return Object.values(value).some((entry) => entry.trim().length > 0);
@@ -51,7 +59,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
   }, [mapsServiceProp]);
   const [draft, setDraft] = useState<DiscoveryFilterValues>({ ...emptyDiscoveryFilters });
   const [applied, setApplied] = useState<DiscoveryFilterValues>({ ...emptyDiscoveryFilters });
-  const [query, setQuery] = useState<RideFilterQuery>({});
+  const [query, setQuery] = useState<RideFilterQuery>({ pickupPlace: { ...calPoly } });
   const [pickup, setPickup] = useState<Place | null>({ ...calPoly });
   const [destination, setDestination] = useState<Place | null>(null);
   const [errors, setErrors] = useState<Partial<Record<keyof DiscoveryFilterValues, string>>>({});
@@ -85,7 +93,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
     };
   }, [query, refreshKey, ridesService]);
 
-  function apply(next: DiscoveryFilterValues) {
+  function apply(next: DiscoveryFilterValues, selectedPickup = pickup, selectedDestination = destination) {
     const result = validateAndBuildRideFilters(next);
     if (!result.ok) {
       setErrors(result.errors);
@@ -96,7 +104,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
     setErrors({});
     setIsApplying(true);
     setLoadState("loading");
-    setQuery(result.filters);
+    setQuery(withSelectedPlaces(result.filters, selectedPickup, selectedDestination));
   }
 
   function clear() {
@@ -107,7 +115,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
     setErrors({});
     setIsApplying(true);
     setLoadState("loading");
-    setQuery(result.ok ? result.filters : {});
+    setQuery(withSelectedPlaces(result.ok ? result.filters : {}, pickup, destination));
   }
 
   function retry() {
@@ -123,19 +131,26 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
   function useDemoPreset() {
     setPickup({ ...calPoly });
     setLocationState({ status: "idle", error: "" });
-    setDestination({ ...sfo });
-    apply(demoFilters);
+    setDestination({ ...losAngeles });
+    apply(demoFilters, calPoly, losAngeles);
   }
 
   function changePickup(place: Place | null) {
     setPickup(place);
+    setIsApplying(true);
+    setLoadState("loading");
+    setQuery((current) => withSelectedPlaces(current, place, destination));
     setLocationState({ status: "idle", error: "" });
   }
 
   async function useCurrentLocation() {
     setLocationState({ status: "loading", error: "" });
     try {
-      setPickup(await locationService.getCurrentPlace());
+      const currentPlace = await locationService.getCurrentPlace();
+      setPickup(currentPlace);
+      setIsApplying(true);
+      setLoadState("loading");
+      setQuery((current) => withSelectedPlaces(current, currentPlace, destination));
       setLocationState({ status: "idle", error: "" });
     } catch (error) {
       setLocationState({ status: "error", error: error instanceof Error ? error.message : "Couldn’t get your current location." });
@@ -175,7 +190,7 @@ export function DiscoveryScreen({ ridesService = fixtureRidesService, mapsServic
         />
 
         <Pressable accessibilityRole="button" disabled={isApplying} onPress={useDemoPreset} style={({ pressed }) => [styles.demoButton, (pressed || isApplying) && styles.buttonMuted]}>
-          <Text style={styles.demoButtonText}>Try tomorrow · SFO · 2 seats</Text>
+          <Text style={styles.demoButtonText}>Demo SLO → LA · via Morro Bay + SBA</Text>
         </Pressable>
 
         <View style={styles.sectionHeader}>

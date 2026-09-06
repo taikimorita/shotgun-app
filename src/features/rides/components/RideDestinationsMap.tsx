@@ -4,7 +4,7 @@ import MapView, { Marker } from "react-native-maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { colors, radii, semanticColors, spacing, typography } from "../../../theme/tokens";
-import { regionForPlaces, uniqueRideDestinations } from "../mapPresentation";
+import { regionForPlaces, uniqueAvailableRoutePoints } from "../mapPresentation";
 import type { Place, Ride } from "../types";
 
 type Props = { origin: Place | null; rides: Ride[] };
@@ -12,8 +12,8 @@ type Props = { origin: Place | null; rides: Ride[] };
 export function RideDestinationsMap({ origin, rides }: Props) {
   const [expanded, setExpanded] = useState(false);
   const insets = useSafeAreaInsets();
-  const destinations = useMemo(() => uniqueRideDestinations(rides), [rides]);
-  const places = useMemo(() => origin ? [origin, ...destinations] : destinations, [destinations, origin]);
+  const routePoints = useMemo(() => uniqueAvailableRoutePoints(rides), [rides]);
+  const places = useMemo(() => origin ? [origin, ...routePoints] : routePoints, [origin, routePoints]);
   const region = useMemo(() => regionForPlaces(places), [places]);
   const mapKey = places.map((place) => place.id).join(":") || "empty";
 
@@ -21,7 +21,7 @@ export function RideDestinationsMap({ origin, rides }: Props) {
     return (
       <MapView
         key={`${mapKey}-${interactive ? "full" : "preview"}`}
-        accessibilityLabel={`Ride map with ${destinations.length} destination${destinations.length === 1 ? "" : "s"}`}
+        accessibilityLabel={`Ride map with ${routePoints.length} available stop${routePoints.length === 1 ? "" : "s"}`}
         initialRegion={region}
         loadingEnabled
         pitchEnabled={interactive}
@@ -39,12 +39,12 @@ export function RideDestinationsMap({ origin, rides }: Props) {
             </View>
           </Marker>
         ) : null}
-        {destinations.map((place) => (
+        {routePoints.map((place) => (
           <Marker
             key={place.id}
-            accessibilityLabel={`Available rides to ${place.label}`}
+            accessibilityLabel={`Available ride stop at ${place.label}`}
             coordinate={{ latitude: place.lat, longitude: place.lng }}
-            description="Available ride destination"
+            description="Available ride stop or destination"
             pinColor={colors.steel}
             title={place.label}
           />
@@ -59,14 +59,14 @@ export function RideDestinationsMap({ origin, rides }: Props) {
         {map(false)}
         <Pressable accessibilityLabel="Open interactive ride map" accessibilityRole="button" onPress={() => setExpanded(true)} style={({ pressed }) => [styles.openOverlay, pressed && styles.pressed]}>
           <View style={styles.openPill}><Text style={styles.openText}>Expand map</Text></View>
-          <Text style={styles.summary}>{origin?.label ?? "Choose a pickup"} · {destinations.length} destination{destinations.length === 1 ? "" : "s"}</Text>
+          <Text style={styles.summary}>{origin?.label ?? "Choose a pickup"} · {routePoints.length} available stop{routePoints.length === 1 ? "" : "s"}</Text>
         </Pressable>
       </View>
       <Modal animationType="slide" onRequestClose={() => setExpanded(false)} presentationStyle="fullScreen" visible={expanded}>
         <View style={styles.fullScreen}>
           {map(true)}
           <View style={[styles.fullHeader, { paddingTop: insets.top + spacing[2] }]} pointerEvents="box-none">
-            <View style={styles.fullTitleCard}><Text style={styles.fullTitle}>Ride destinations</Text><Text style={styles.fullSubtitle}>Pan, zoom, or tap a marker for details.</Text></View>
+            <View style={styles.fullTitleCard}><Text style={styles.fullTitle}>Ride stops</Text><Text style={styles.fullSubtitle}>Pan, zoom, or tap a marker for details.</Text></View>
             <Pressable accessibilityLabel="Close interactive map" accessibilityRole="button" onPress={() => setExpanded(false)} style={({ pressed }) => [styles.closeButton, pressed && styles.pressed]}><Text style={styles.closeText}>Close</Text></Pressable>
           </View>
         </View>
