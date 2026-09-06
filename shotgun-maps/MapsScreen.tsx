@@ -15,4 +15,4 @@ export default function MapsScreen({ onMapPress, onPickupPress, onDestinationPre
   return <ImageBackground accessibilityLabel="Shotgun route selection" resizeMode="contain" source={require('./maps-reference.png')} style={styles.screen}><View pointerEvents="box-none" style={styles.targets}><MapCanvas onPress={() => activate('Map', onMapPress)} /><PickupCard onPress={() => activate('Pickup', onPickupPress)} /><DestinationCard onPress={() => activate('Destination', onDestinationPress)} /><ViewRidesButton onPress={() => activate('View rides', onViewRides)} /><Text accessibilityLiveRegion="polite" style={styles.announcement}>{announcement}</Text></View></ImageBackground>;
 }
 
-const styles = StyleSheet.create({ screen: { flex: 1, width: '100%', aspectRatio: 492 / 909 }, targets: { ...StyleSheet.absoluteFillObject }, announcement: { opacity: 0, position: 'absolute' } });
+const styles = StyleSheet.create({ screen: { flex: 1, width: '100%', aspectRatio: 492 / 909 }, targets: { ...StyleSheet.absoluteFill }, announcement: { opacity: 0, position: 'absolute' } });
