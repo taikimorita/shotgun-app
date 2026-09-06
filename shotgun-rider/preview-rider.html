@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Shotgun rider profile preview</title>
+    <style>
+      * { box-sizing: border-box; }
+      body { align-items: center; background: #eaf3f9; display: flex; justify-content: center; margin: 0; min-height: 100vh; padding: 20px; }
+      .phone { aspect-ratio: 478 / 909; max-width: 478px; position: relative; width: 100%; }
+      img { display: block; height: 100%; width: 100%; }
+      button { background: transparent; border: 0; border-radius: 16px; cursor: pointer; position: absolute; } button:active { opacity: .72; } button:focus-visible { outline: 3px solid #102a43; outline-offset: 3px; }
+      .card { left: 7%; right: 7%; height: 9.5%; } #university { top: 38.1%; } #graduation-year { top: 48.8%; } #phone-number { top: 59.4%; } #emergency-contact { top: 70.2%; } #save { top: 82%; height: 7.5%; left: 7%; right: 7%; }
+      .status { color: #102a43; font: 600 14px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; min-height: 20px; position: absolute; text-align: center; top: calc(100% + 10px); width: 100%; }
+    </style>
+  </head>
+  <body>
+    <main class="phone"><img alt="Maya Chen rider profile" src="rider-reference.png" /><button aria-label="Edit university" class="card" id="university"></button><button aria-label="Edit graduation year" class="card" id="graduation-year"></button><button aria-label="Edit phone number" class="card" id="phone-number"></button><button aria-label="Edit emergency contact" class="card" id="emergency-contact"></button><button aria-label="Save rider profile" id="save"></button><p aria-live="polite" class="status" id="status"></p></main>
+    <script>
+      const labels = { university: 'University selected.', 'graduation-year': 'Graduation year selected.', 'phone-number': 'Phone number selected.', 'emergency-contact': 'Emergency contact selected.', save: 'Rider profile saved.' };
+      Object.entries(labels).forEach(([id, message]) => document.querySelector(`#${id}`).onclick = () => { document.querySelector('#status').textContent = message; });
+    </script>
+  </body>
+</html>
