@@ -1,7 +1,11 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 
-export function DestinationCard({ onPress }: { onPress: () => void }) {
-  return <Pressable accessibilityLabel="Choose destination: Northgate, Berkeley" accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.card, pressed && styles.pressed]} />;
+import { colors, radii, spacing } from '@/src/theme/tokens';
+
+type Props = { value: string; onChangeText: (value: string) => void; onFocus: () => void };
+
+export function DestinationCard({ value, onChangeText, onFocus }: Props) {
+  return <View style={styles.card}><Text style={styles.icon}>🎓</Text><View style={styles.copy}><Text style={styles.label}>DESTINATION</Text><TextInput accessibilityLabel="Destination" onChangeText={onChangeText} onFocus={onFocus} placeholder="Choose destination" placeholderTextColor={colors.textMuted} style={styles.input} value={value} /></View></View>;
 }
 
-const styles = StyleSheet.create({ card: { position: 'absolute', left: '8%', right: '8%', top: '67.8%', height: '10.8%', borderRadius: 18 }, pressed: { opacity: 0.72 } });
+const styles = StyleSheet.create({ card: { alignItems: 'center', backgroundColor: colors.white, borderColor: colors.border, borderRadius: radii.lg, borderWidth: 1, flexDirection: 'row', gap: spacing[3], minHeight: 98, paddingHorizontal: spacing[4] }, icon: { fontSize: 30 }, copy: { flex: 1 }, label: { color: colors.steel, fontSize: 13, fontWeight: '800', letterSpacing: 1.1 }, input: { color: colors.ink, fontSize: 19, fontWeight: '700', marginTop: 4, padding: 0 } });
